@@ -1,0 +1,31 @@
+name: msw-prod
+
+include:
+  - docker/compose.yaml
+
+services:
+  backend:
+    image: msw-backend:latest
+    restart: unless-stopped
+
+  frontend:
+    image: msw-frontend:latest
+    restart: unless-stopped
+
+  nginx:
+    restart: unless-stopped
+
+  mysql:
+    restart: unless-stopped
+
+  redis:
+    restart: unless-stopped
+
+  queue:
+    restart: unless-stopped
+
+  scheduler:
+    restart: unless-stopped
+
+  mailpit:
+    restart: unless-stopped

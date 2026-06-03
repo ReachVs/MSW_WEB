@@ -1,20 +1,51 @@
 # Docker Runtime
 
-Run the full local stack from this Docker folder:
+Run the full local stack from the repository root.
+
+First start on a new device, or after dependency changes:
 
 ```sh
-cd /Users/ceaser/Documents/Work/Ongoing-Project/MSW/my-project/docker
 docker compose up --build
+```
+
+Normal start after the first build:
+
+```sh
+docker compose up -d
+```
+
+Stop all services:
+
+```sh
+docker compose down
 ```
 
 Services:
 
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:8080
-- Mailpit: http://localhost:8025
+- React client: http://localhost:5173
+- Laravel admin/backend: http://localhost:8080
+- Laravel admin dashboard: http://localhost:8080/admin
 - MySQL 8: localhost:3306
-- Redis: localhost:6379
 
-If any port is already busy, copy `.env.example` to `.env` inside this folder and change the forwarded port values.
+The backend container creates `backend/.env` from `backend/.env.example` when it is missing. It also installs Composer dependencies, runs migrations, and runs the idempotent seeder on startup.
 
-The backend container runs migrations and the idempotent seeder on startup. Use `admin@example.com` with password `password` for the seeded account.
+The frontend container installs Node dependencies from `frontend/package-lock.json`. No manual `npm install` or `composer install` is required to start the project on a new device.
+
+Seeded admin account:
+
+```text
+admin@example.com
+password
+```
+
+If a port is already busy, copy `docker/.env.example` to `docker/.env` and change the forwarded port values.
+
+Current Docker services:
+
+```text
+backend
+frontend
+mysql
+```
+
+Redis, queue worker, scheduler, Nginx, and Mailpit are intentionally disabled for the current UI-development stage.

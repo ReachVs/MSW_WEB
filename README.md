@@ -1,31 +1,117 @@
 # MSW Motorcycle Service Platform
 
-Local full-stack application with a Laravel API, React frontend, and Docker runtime.
+MSW is a motorcycle service management project with two intentionally separated UI surfaces:
 
-## Structure
+- `backend/` Laravel application for the admin dashboard, backend models, database, queues, email, and future APIs.
+- `frontend/` React/Vite application for the public client/customer side.
 
-- `backend/` Laravel API, models, requests, resources, tests, and application layers.
-- `frontend/` React/Vite app organized by app, services, pages, components, features, hooks, layouts, routes, utils, and assets.
-- `docker/` Container build and service configuration.
-- `docs/` API, deployment, database, and Postman documentation.
+Current development rule: **admin UI is Laravel Blade, client UI is React, and the React client is not integrated with the API yet.**
 
-## Local Runtime
+## Start With Docker
 
-```sh
-cd docker
-docker compose up --build
-```
+From the repository root:
 
-Or from the repository root:
+First start on a new device, or after dependency changes:
 
 ```sh
 docker compose up --build
 ```
 
-Frontend: http://localhost:5173
+Normal start after the first build:
 
-Backend: http://localhost:8080
+```sh
+docker compose up -d
+```
 
-Mailpit: http://localhost:8025
+Stop all services:
 
-Admin login: `admin@example.com` / `password`
+```sh
+docker compose down
+```
+
+Docker starts:
+
+- Laravel/PHP backend
+- React/Vite frontend
+- MySQL
+
+Open:
+
+- React client UI: http://localhost:5173
+- Laravel admin UI: http://localhost:8080/admin
+- Backend health check: http://localhost:8080/api/health
+
+The backend container creates `backend/.env` from `backend/.env.example` if it is missing, installs Composer dependencies into the Docker `backend-vendor` volume, runs migrations, and runs seeders.
+
+The frontend container installs Node dependencies from `frontend/package-lock.json` into the Docker `frontend-node-modules` volume. Team members do not need to run `npm install` or `composer install` manually to start the project.
+
+Do not manually delete `backend/vendor` or `frontend/node_modules` while the containers are running. Those paths are Docker dependency mounts. If dependencies are missing or broken, rebuild the services:
+
+```sh
+docker compose up -d --build
+```
+
+Seeded admin account:
+
+```text
+admin@example.com
+password
+```
+
+## Development Commands
+
+Use Docker commands for development tasks.
+
+Frontend:
+
+```sh
+docker compose exec frontend npm run build
+docker compose exec frontend npm run lint
+```
+
+Backend:
+
+```sh
+docker compose exec backend php artisan migrate
+docker compose exec backend php artisan db:seed
+docker compose exec backend php artisan test
+```
+
+Current Docker services:
+
+```text
+backend
+frontend
+mysql
+```
+
+Redis, queue worker, scheduler, Nginx, and Mailpit are intentionally not running yet. Add them back only when the project needs real async jobs, email testing, or a production-like web server.
+
+## Architecture Direction
+
+Admin dashboard:
+
+- Built with Laravel Blade.
+- Lives in `backend/resources/views/admin`.
+- Starts at `/admin`.
+- Will manage bookings, work orders, customers, inventory, reports, and settings.
+
+Client side:
+
+- Built with ReactJS.
+- Lives in `frontend/src`.
+- Uses static/mock data for now.
+- Will later connect to backend APIs after the UI flow is approved.
+
+Backend:
+
+- Owns database schema, seeders, queues, notifications, auth, and future API endpoints.
+- Current API code can stay, but it is not the client-side integration target yet.
+
+## Team Rule
+
+Do not mix admin and client UI responsibilities:
+
+- Put admin screens in Laravel Blade.
+- Put customer/public screens in React.
+- Keep API integration out of React until the UI and process flow are finalized.

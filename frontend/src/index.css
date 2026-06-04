@@ -7,6 +7,16 @@
     font-family: 'Space Grotesk', sans-serif;
     scroll-behavior: smooth;
   }
+
+  button {
+    transition: all 300ms ease-out;
+  }
+
+  input,
+  select,
+  textarea {
+    transition: colors 200ms ease-out;
+  }
 }
 
 .material-symbols-outlined {
@@ -40,6 +50,11 @@
     'Consolas', monospace;
 }
 
+/* Smooth transitions on interactive elements */
+.group:hover {
+  transition: all 300ms ease-out;
+}
+
 /* Custom scrollbar for clinical look */
 ::-webkit-scrollbar {
   width: 4px;
@@ -50,7 +65,52 @@
 }
 ::-webkit-scrollbar-thumb {
   background: #c5c6cd;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #091426;
+}
+
+/* Enhanced focus states for accessibility */
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fbf8fa, 0 0 0 4px #b02d29;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fbf8fa, 0 0 0 4px #b02d29;
+}
+
+/* Smooth animations */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideInUp {
+  animation: slideInUp 300ms ease-out;
+}
+
+.animate-slideInDown {
+  animation: slideInDown 300ms ease-out;
 }

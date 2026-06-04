@@ -12,7 +12,7 @@ export default function ConfirmModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-md animate-fadeIn">
-      <div className="bg-surface-container-lowest border border-outline-variant max-w-md w-full shadow-xl">
+      <div className="bg-surface-container-lowest border border-outline-variant max-w-[28rem] w-full shadow-xl">
         <div className="p-lg">
           <h2 className="font-headline-md text-lg text-primary font-bold uppercase mb-3 tracking-tight">
             {title}

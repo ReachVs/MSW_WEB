@@ -17,9 +17,7 @@ export default function Navbar({
   ]
 
   return (
-    <nav
-      className={`w-full top-0 sticky z-50 bg-background border-b border-on-surface/10 ${isAuthenticated ? 'ml-0 md:ml-64 w-auto' : 'ml-16'}`}
-    >
+    <nav className="w-full top-0 sticky z-50 bg-background border-b border-on-surface/10">
       <div className="flex justify-between items-center px-margin py-md w-full max-w-screen-2xl mx-auto">
         <div
           className="font-display-xl text-[32px] uppercase tracking-tighter text-primary cursor-pointer select-none"

@@ -49,7 +49,7 @@ export default function BookingModal({ isOpen, onClose, onSubmit, bikes }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-primary/70 backdrop-blur-sm p-md">
       <div
-        className="w-full max-w-lg bg-background border border-primary p-lg relative animate-scaleIn shadow-2xl"
+        className="w-full max-w-[32rem] bg-background border border-primary p-lg relative animate-scaleIn shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}

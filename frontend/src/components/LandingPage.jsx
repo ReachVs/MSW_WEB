@@ -13,7 +13,7 @@ export default function LandingPage({ onBookService, onExplore }) {
               <br />
               <span className="text-secondary">ENGINEERING</span>
             </h1>
-            <p className="font-body-lg text-body-lg text-on-surface-variant max-w-md mb-xl">
+            <p className="font-body-lg text-body-lg text-on-surface-variant max-w-[28rem] mb-xl">
               Elite motorcycle customisation and clinical technical maintenance
               for the modern purist. We bridge the gap between mechanical soul
               and architectural precision.
@@ -130,7 +130,7 @@ export default function LandingPage({ onBookService, onExplore }) {
                 <h3 className="font-headline-md text-2xl text-primary group-hover:text-on-primary transition-colors mb-md uppercase font-bold">
                   Geometric Integrity
                 </h3>
-                <p className="font-body-md text-body-md text-on-surface-variant group-hover:text-on-primary/80 transition-colors max-w-md">
+                <p className="font-body-md text-body-md text-on-surface-variant group-hover:text-on-primary/80 transition-colors max-w-[28rem]">
                   Every component we design follows a strict geometric
                   hierarchy. We strip away the unnecessary to reveal the raw
                   mechanical beauty of the machine, ensuring form perfectly

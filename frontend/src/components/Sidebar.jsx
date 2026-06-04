@@ -8,17 +8,7 @@ export default function Sidebar({ currentView, onNavigate, onBookService }) {
   ]
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 border-r border-outline-variant bg-surface flex flex-col py-md px-sm shrink-0 z-40">
-      {/* Brand Header */}
-      <div className="px-sm mb-lg">
-        <div className="font-display-xl text-[24px] font-black text-primary leading-tight tracking-tight">
-          MAD APE
-        </div>
-        <div className="font-label-sm text-[10px] uppercase tracking-widest text-on-surface-variant opacity-60">
-          PRECISION MOTORWORKS
-        </div>
-      </div>
-
+    <aside className="fixed left-0 top-[81px] h-[calc(100vh-81px)] w-64 border-r border-outline-variant bg-surface flex flex-col py-md px-sm shrink-0 z-40">
       {/* Book Service Action */}
       <button
         onClick={onBookService}

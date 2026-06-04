@@ -192,7 +192,7 @@ export default function GaragePage() {
             <h1 className="font-display-xl text-3xl md:text-4xl font-black text-primary uppercase tracking-tighter">
               LIVE WORKSHOP TRACK
             </h1>
-            <p className="text-on-surface-variant font-body-md text-sm mt-1 max-w-xl">
+            <p className="text-on-surface-variant font-body-md text-sm mt-1 max-w-[36rem]">
               Telemetry links established. Review calibration matrices, engine
               load tolerances, and live service milestones.
             </p>

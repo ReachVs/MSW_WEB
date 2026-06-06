@@ -7,6 +7,7 @@ import LandingPage from './components/LandingPage'
 import GaragePage from './components/GaragePage'
 import ServiceHistoryPage from './components/ServiceHistoryPage'
 import ProfilePage from './components/ProfilePage'
+import RegisterPage from './components/RegisterPage'
 import './index.css'
 
 function App() {
@@ -63,6 +64,11 @@ function App() {
     setCurrentView('garage')
   }
 
+  const handleRegister = () => {
+    setIsAuthenticated(true)
+    setCurrentView('garage')
+  }
+
   const handleLogout = () => {
     setIsAuthenticated(false)
     setCurrentView('landing')
@@ -112,11 +118,25 @@ function App() {
   const renderViewContent = () => {
     const protectedViews = ['garage', 'history', 'profile']
 
+    if (!isAuthenticated && currentView === 'register') {
+      return (
+        <RegisterPage
+          onRegisterSuccess={handleRegister}
+          onNavigate={setCurrentView}
+        />
+      )
+    }
+
     if (
       !isAuthenticated &&
       (currentView === 'login' || protectedViews.includes(currentView))
     ) {
-      return <LoginPage onLoginSuccess={handleLogin} />
+      return (
+        <LoginPage
+          onLoginSuccess={handleLogin}
+          onNavigate={setCurrentView}
+        />
+      )
     }
 
     switch (currentView) {
@@ -139,13 +159,19 @@ function App() {
         return isAuthenticated ? (
           <ProfilePage onLogout={handleLogout} />
         ) : (
-          <LoginPage onLoginSuccess={handleLogin} />
+          <LoginPage
+            onLoginSuccess={handleLogin}
+            onNavigate={setCurrentView}
+          />
         )
       case 'login':
         return isAuthenticated ? (
           <GaragePage />
         ) : (
-          <LoginPage onLoginSuccess={handleLogin} />
+          <LoginPage
+            onLoginSuccess={handleLogin}
+            onNavigate={setCurrentView}
+          />
         )
       case 'about':
       case 'contact':
@@ -162,7 +188,7 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-on-background selection:bg-secondary selection:text-on-secondary">
-      {!isAuthenticated && currentView === 'login' ? (
+      {!isAuthenticated && (currentView === 'login' || currentView === 'register') ? (
         renderViewContent()
       ) : (
         <>
@@ -185,6 +211,7 @@ function App() {
             isAuthenticated={isAuthenticated}
             currentView={currentView}
             onLogin={() => setCurrentView('login')}
+            onRegister={() => setCurrentView('register')}
             onLogout={handleLogout}
             onNavigate={setCurrentView}
           />

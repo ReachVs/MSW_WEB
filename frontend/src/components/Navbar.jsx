@@ -4,6 +4,7 @@ export default function Navbar({
   isAuthenticated,
   currentView,
   onLogin,
+  onRegister,
   onLogout,
   onNavigate,
 }) {
@@ -17,48 +18,54 @@ export default function Navbar({
   ]
 
   return (
-    <nav className="w-full top-0 sticky z-50 bg-background border-b border-on-surface/10">
-      <div className="flex justify-between items-center px-margin py-md w-full max-w-screen-2xl mx-auto">
-        <div
-          className="font-display-xl text-[32px] uppercase tracking-tighter text-primary cursor-pointer select-none"
+    <nav className="w-full top-0 sticky z-50 bg-background border-b border-on-surface/10 overflow-hidden">
+      <div className="w-full min-h-24 px-sm md:px-margin py-md grid grid-cols-1 sm:grid-cols-[220px_minmax(0,1fr)] lg:grid-cols-[220px_minmax(560px,1fr)_280px] items-center gap-md lg:gap-lg">
+        <button
+          type="button"
+          className="w-[220px] justify-self-start font-display-xl text-[32px] uppercase tracking-tighter text-primary cursor-pointer select-none text-left whitespace-nowrap"
           onClick={() => onNavigate('landing')}
         >
           MAD APE
-        </div>
+        </button>
 
         {/* Desktop Navigation Links */}
-        <div className="hidden md:flex gap-lg items-center">
+        <div className="order-3 sm:col-span-2 lg:order-none lg:col-span-1 hidden md:grid grid-cols-4 items-center justify-self-center w-[560px]">
           {navLinks.map((link) => {
             const isActive = currentView === link.view
             return (
               <button
                 key={link.label}
                 onClick={() => onNavigate(link.view)}
-                className={`font-label-sm text-label-sm uppercase tracking-widest transition-colors pb-1 border-b-2 ${
+                className={`relative h-9 w-full inline-flex items-center justify-center text-center font-label-sm text-xs uppercase tracking-widest transition-colors whitespace-nowrap ${
                   isActive
-                    ? 'text-secondary border-secondary'
-                    : 'text-on-surface-variant border-transparent hover:text-primary hover:border-primary/30'
+                    ? 'text-secondary'
+                    : 'text-on-surface-variant hover:text-primary'
                 }`}
               >
                 {link.label}
+                <span
+                  className={`absolute bottom-0 left-1/2 h-0.5 w-16 -translate-x-1/2 bg-secondary transition-opacity ${
+                    isActive ? 'opacity-100' : 'opacity-0'
+                  }`}
+                ></span>
               </button>
             )
           })}
         </div>
 
         {/* Right side buttons */}
-        <div className="flex gap-md items-center">
+        <div className="flex w-full lg:w-[280px] gap-sm md:gap-md items-center justify-start sm:justify-end justify-self-end">
           {isAuthenticated ? (
             <>
               <button
                 onClick={() => onNavigate('garage')}
-                className="hidden sm:inline-block font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all"
+                className="hidden sm:inline-flex w-28 h-9 items-center justify-center text-center font-label-sm text-xs uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all whitespace-nowrap"
               >
                 My Garage
               </button>
               <button
                 onClick={onLogout}
-                className="bg-primary text-on-primary px-lg py-sm font-label-sm text-label-sm uppercase tracking-widest hover:bg-secondary transition-all active:scale-95"
+                className="w-28 h-9 inline-flex items-center justify-center text-center bg-primary text-on-primary font-label-sm text-xs uppercase tracking-widest hover:bg-secondary transition-all active:scale-95"
               >
                 Logout
               </button>
@@ -67,13 +74,13 @@ export default function Navbar({
             <>
               <button
                 onClick={onLogin}
-                className="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all"
+                className="w-20 h-9 inline-flex items-center justify-center text-center font-label-sm text-xs uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all"
               >
                 Login
               </button>
               <button
-                onClick={onLogin}
-                className="bg-secondary text-on-secondary px-lg py-sm font-label-sm text-label-sm uppercase tracking-widest hover:bg-primary transition-all active:scale-95"
+                onClick={onRegister}
+                className="w-44 h-9 inline-flex items-center justify-center text-center bg-secondary text-on-secondary font-label-sm text-xs uppercase tracking-widest hover:bg-primary transition-all active:scale-95"
               >
                 Get Started
               </button>
@@ -83,7 +90,7 @@ export default function Navbar({
           {/* Mobile menu toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden flex items-center p-1 text-primary hover:text-secondary transition-colors"
+            className="md:hidden flex h-9 w-9 items-center justify-center text-primary hover:text-secondary transition-colors"
           >
             <span className="material-symbols-outlined text-2xl">
               {mobileMenuOpen ? 'close' : 'menu'}
@@ -94,7 +101,7 @@ export default function Navbar({
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-background border-b border-on-surface/10 px-margin py-md flex flex-col gap-4 animate-fadeIn">
+        <div className="md:hidden bg-background border-b border-on-surface/10 px-sm py-md flex flex-col gap-4 animate-fadeIn">
           {navLinks.map((link) => (
             <button
               key={link.label}

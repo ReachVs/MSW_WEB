@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import AuthFooter from './AuthFooter'
+import AuthHeader from './AuthHeader'
 
-export default function LoginPage({ onLoginSuccess }) {
+export default function LoginPage({ onLoginSuccess, onNavigate }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -26,29 +28,7 @@ export default function LoginPage({ onLoginSuccess }) {
 
   return (
     <div className="w-full min-h-screen flex flex-col bg-background text-on-background font-body-md technical-grid">
-      <header className="w-full top-0 sticky bg-background border-b border-on-surface/10 flex justify-between items-center px-margin py-md z-50">
-        <div className="font-display-xl text-[32px] uppercase tracking-tighter text-primary">
-          MAD APE
-        </div>
-        <nav className="hidden md:flex items-center gap-lg">
-          {['Home', 'Contact Us', 'Service', 'About Us'].map((item) => (
-            <span
-              key={item}
-              className="font-label-sm text-xs uppercase tracking-widest text-on-surface hover:text-secondary transition-colors"
-            >
-              {item}
-            </span>
-          ))}
-        </nav>
-        <div className="flex items-center gap-md">
-          <span className="font-label-sm text-xs uppercase tracking-widest text-on-surface px-md py-sm">
-            Login
-          </span>
-          <span className="bg-secondary text-on-primary font-label-sm text-xs uppercase tracking-widest px-lg py-sm">
-            Get Started
-          </span>
-        </div>
-      </header>
+      <AuthHeader activeView="login" onNavigate={onNavigate} />
 
       <main className="flex-grow flex items-center justify-center p-margin">
         <div className="w-full max-w-[480px] flex flex-col items-center">
@@ -162,7 +142,11 @@ export default function LoginPage({ onLoginSuccess }) {
             <span className="font-label-sm text-xs uppercase tracking-widest text-on-surface-variant">
               New Personnel?
             </span>
-            <button className="border border-on-surface px-lg py-sm font-label-sm text-xs uppercase tracking-widest hover:bg-surface-container-high transition-all">
+            <button
+              type="button"
+              onClick={() => onNavigate('register')}
+              className="border border-on-surface px-lg py-sm font-label-sm text-xs uppercase tracking-widest hover:bg-surface-container-high transition-all"
+            >
               Establish Account
             </button>
           </div>
@@ -179,29 +163,7 @@ export default function LoginPage({ onLoginSuccess }) {
         </span>
       </div>
 
-      <footer className="w-full mt-auto bg-primary border-t border-secondary/20 flex flex-col items-center justify-center py-lg px-margin gap-md">
-        <div className="font-headline-lg text-3xl text-on-primary uppercase tracking-tighter">
-          MAD APE
-        </div>
-        <div className="flex gap-lg flex-wrap justify-center">
-          {[
-            'Privacy Policy',
-            'Terms of Service',
-            'Technical Documentation',
-            'Global Support',
-          ].map((item) => (
-            <span
-              key={item}
-              className="font-label-sm text-xs uppercase tracking-widest text-on-primary/60 hover:text-on-primary transition-colors"
-            >
-              {item}
-            </span>
-          ))}
-        </div>
-        <p className="font-label-sm text-xs uppercase tracking-widest text-on-primary/40 text-center">
-          2026 MAD APE MOTORWORKS. ENGINEERED TO EXCELLENCE.
-        </p>
-      </footer>
+      <AuthFooter />
     </div>
   )
 }

@@ -12,7 +12,7 @@ export default function AddBikeModal({
       vin: '',
       engineCapacity: '',
       serviceStatus: 'Ready',
-    }
+    },
   )
 
   const [errors, setErrors] = useState({})

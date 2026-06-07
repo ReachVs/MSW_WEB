@@ -132,10 +132,7 @@ function App() {
       (currentView === 'login' || protectedViews.includes(currentView))
     ) {
       return (
-        <LoginPage
-          onLoginSuccess={handleLogin}
-          onNavigate={setCurrentView}
-        />
+        <LoginPage onLoginSuccess={handleLogin} onNavigate={setCurrentView} />
       )
     }
 
@@ -159,19 +156,13 @@ function App() {
         return isAuthenticated ? (
           <ProfilePage onLogout={handleLogout} />
         ) : (
-          <LoginPage
-            onLoginSuccess={handleLogin}
-            onNavigate={setCurrentView}
-          />
+          <LoginPage onLoginSuccess={handleLogin} onNavigate={setCurrentView} />
         )
       case 'login':
         return isAuthenticated ? (
           <GaragePage />
         ) : (
-          <LoginPage
-            onLoginSuccess={handleLogin}
-            onNavigate={setCurrentView}
-          />
+          <LoginPage onLoginSuccess={handleLogin} onNavigate={setCurrentView} />
         )
       case 'about':
       case 'contact':
@@ -188,7 +179,8 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-on-background selection:bg-secondary selection:text-on-secondary">
-      {!isAuthenticated && (currentView === 'login' || currentView === 'register') ? (
+      {!isAuthenticated &&
+      (currentView === 'login' || currentView === 'register') ? (
         renderViewContent()
       ) : (
         <>
@@ -217,9 +209,13 @@ function App() {
           />
 
           {/* Main app block */}
-          <div className={`flex flex-col flex-1 ${isAuthenticated ? 'ml-0 md:ml-64' : 'ml-16'}`}>
+          <div
+            className={`flex flex-col flex-1 ${isAuthenticated ? 'ml-0 md:ml-64' : 'ml-16'}`}
+          >
             {/* Dynamic page content */}
-            <main className="flex-grow flex flex-col">{renderViewContent()}</main>
+            <main className="flex-grow flex flex-col">
+              {renderViewContent()}
+            </main>
             {!isAuthenticated && <SiteFooter />}
           </div>
 
@@ -444,9 +440,24 @@ function CatalogPage({ onBook }) {
               <SectionTitle number="03" title="Combustion Analysis" />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
                 {[
-                  ['air', 'Ignition & Intake', 'Spark plug analysis, air filter flow test, and throttle body synchronization.', '$110'],
-                  ['ev_station', 'Fuel System', 'Injector cleaning, fuel pressure regulation, and tank sediment flush.', '$130'],
-                  ['monitor_heart', 'Engine Health', 'Compression testing, leak-down analysis, and borescope cylinder inspection.', '$180'],
+                  [
+                    'air',
+                    'Ignition & Intake',
+                    'Spark plug analysis, air filter flow test, and throttle body synchronization.',
+                    '$110',
+                  ],
+                  [
+                    'ev_station',
+                    'Fuel System',
+                    'Injector cleaning, fuel pressure regulation, and tank sediment flush.',
+                    '$130',
+                  ],
+                  [
+                    'monitor_heart',
+                    'Engine Health',
+                    'Compression testing, leak-down analysis, and borescope cylinder inspection.',
+                    '$180',
+                  ],
                 ].map(([icon, title, copy, price], index) => (
                   <button
                     key={title}

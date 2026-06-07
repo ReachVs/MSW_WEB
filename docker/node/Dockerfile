@@ -7,4 +7,8 @@ RUN npm ci
 
 COPY frontend ./
 
+COPY docker/node/entrypoint.sh /usr/local/bin/msw-frontend-entrypoint
+RUN chmod +x /usr/local/bin/msw-frontend-entrypoint
+
+ENTRYPOINT ["msw-frontend-entrypoint"]
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

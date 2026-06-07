@@ -95,14 +95,18 @@
 /* Enhanced focus states for accessibility */
 button:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px #fbf8fa, 0 0 0 4px #b02d29;
+  box-shadow:
+    0 0 0 2px #fbf8fa,
+    0 0 0 4px #b02d29;
 }
 
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px #fbf8fa, 0 0 0 4px #b02d29;
+  box-shadow:
+    0 0 0 2px #fbf8fa,
+    0 0 0 4px #b02d29;
 }
 
 /* Smooth animations */

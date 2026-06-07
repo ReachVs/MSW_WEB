@@ -96,21 +96,18 @@ export default function ServiceHistoryPage({ logs }) {
   // Pagination
   const totalPages = Math.ceil(sortedLogs.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedLogs = sortedLogs.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  )
+  const paginatedLogs = sortedLogs.slice(startIndex, startIndex + itemsPerPage)
 
   // Export function
   const handleExport = () => {
     const exportData = sortedLogs.map((log) => ({
       'Ref ID': log.id,
-      'Date': log.date,
-      'Unit': log.unit,
-      'VIN': log.vin,
+      Date: log.date,
+      Unit: log.unit,
+      VIN: log.vin,
       'Service Type': log.serviceType,
-      'Fee': log.fee,
-      'Status': log.status,
+      Fee: log.fee,
+      Status: log.status,
     }))
 
     const dataStr = JSON.stringify(exportData, null, 2)
@@ -419,9 +416,7 @@ export default function ServiceHistoryPage({ logs }) {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() =>
-                      setCurrentPage(Math.max(1, currentPage - 1))
-                    }
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
                     className="border border-outline-variant text-on-surface px-md py-2 font-label-sm text-xs uppercase tracking-widest hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >

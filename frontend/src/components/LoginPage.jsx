@@ -55,16 +55,16 @@ export default function LoginPage({ onLoginSuccess, onNavigate }) {
               >
                 (Email)
               </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="OPERATOR@MADAPE.ENGINEERING"
                 className="input-underline bg-transparent py-sm font-body-md text-base text-on-surface placeholder:text-outline-variant focus:outline-none w-full"
-              disabled={isLoading}
-            />
-          </div>
+                disabled={isLoading}
+              />
+            </div>
 
             <div className="flex flex-col gap-xs">
               <div className="flex justify-between items-end">
@@ -81,62 +81,62 @@ export default function LoginPage({ onLoginSuccess, onNavigate }) {
                   Forget Password
                 </button>
               </div>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Access code"
                 className="input-underline bg-transparent py-sm font-body-md text-base text-on-surface placeholder:text-outline-variant focus:outline-none w-full"
-              disabled={isLoading}
-            />
-          </div>
+                disabled={isLoading}
+              />
+            </div>
 
             <div className="flex items-center justify-between mt-sm">
               <label className="flex items-center gap-sm cursor-pointer group">
-            <input
-              id="remember"
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
+                <input
+                  id="remember"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="w-4 h-4 text-secondary border-outline-variant focus:ring-0 cursor-pointer"
-              disabled={isLoading}
-            />
+                  disabled={isLoading}
+                />
                 <span className="font-label-sm text-xs uppercase text-on-surface-variant group-hover:text-on-surface transition-colors">
                   Keep Session Active
                 </span>
               </label>
-          </div>
-
-          {error && (
-              <div className="p-md bg-error-container border border-error text-on-error-container font-body-md text-sm flex items-start gap-2">
-              <span className="material-symbols-outlined text-lg flex-shrink-0 mt-0.5">
-                error
-              </span>
-              <span>{error}</span>
             </div>
-          )}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-              className="bg-secondary text-on-primary font-label-sm text-xs uppercase tracking-widest py-md px-lg w-full hover:bg-on-surface transition-all active:scale-[0.98] duration-300 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isLoading ? (
-              <>
-                <span className="inline-block w-4 h-4 border-2 border-on-secondary border-t-transparent animate-spin"></span>
-                AUTHENTICATING
-              </>
-            ) : (
-              <>
-                <span className="material-symbols-outlined text-sm">
-                  lock_open
+            {error && (
+              <div className="p-md bg-error-container border border-error text-on-error-container font-body-md text-sm flex items-start gap-2">
+                <span className="material-symbols-outlined text-lg flex-shrink-0 mt-0.5">
+                  error
                 </span>
-                  Initialize Session
-              </>
+                <span>{error}</span>
+              </div>
             )}
-          </button>
-        </form>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="bg-secondary text-on-primary font-label-sm text-xs uppercase tracking-widest py-md px-lg w-full hover:bg-on-surface transition-all active:scale-[0.98] duration-300 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <span className="inline-block w-4 h-4 border-2 border-on-secondary border-t-transparent animate-spin"></span>
+                  AUTHENTICATING
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-sm">
+                    lock_open
+                  </span>
+                  Initialize Session
+                </>
+              )}
+            </button>
+          </form>
 
           <div className="mt-lg flex flex-col items-center gap-sm">
             <span className="font-label-sm text-xs uppercase tracking-widest text-on-surface-variant">

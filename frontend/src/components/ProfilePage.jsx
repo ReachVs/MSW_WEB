@@ -56,7 +56,9 @@ export default function ProfilePage({ onLogout }) {
         {/* Success Message */}
         {saveMessage && (
           <div className="p-md bg-primary text-on-primary border border-secondary flex items-center gap-2">
-            <span className="material-symbols-outlined text-lg">check_circle</span>
+            <span className="material-symbols-outlined text-lg">
+              check_circle
+            </span>
             <span className="font-body-md text-sm">{saveMessage}</span>
           </div>
         )}
@@ -73,7 +75,9 @@ export default function ProfilePage({ onLogout }) {
                   onClick={() => setEditMode(true)}
                   className="flex items-center gap-2 px-md py-sm bg-primary text-on-primary font-label-sm text-xs uppercase tracking-widest hover:bg-secondary transition-all"
                 >
-                  <span className="material-symbols-outlined text-sm">edit</span>
+                  <span className="material-symbols-outlined text-sm">
+                    edit
+                  </span>
                   Edit Profile
                 </button>
               )}
@@ -219,8 +223,7 @@ export default function ProfilePage({ onLogout }) {
                 {
                   key: 'liveTracking',
                   label: 'Live Workshop Updates',
-                  description:
-                    'Receive real-time updates on service progress',
+                  description: 'Receive real-time updates on service progress',
                 },
                 {
                   key: 'diagnosticShare',
@@ -307,7 +310,8 @@ export default function ProfilePage({ onLogout }) {
           {/* Footer Info */}
           <div className="text-center py-lg border-t border-outline-variant">
             <p className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">
-              Member Since {new Date(user.joinDate).toLocaleDateString('en-US', {
+              Member Since{' '}
+              {new Date(user.joinDate).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',

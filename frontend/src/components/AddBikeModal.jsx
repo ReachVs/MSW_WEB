@@ -11,7 +11,6 @@ export default function AddBikeModal({
       name: '',
       vin: '',
       engineCapacity: '',
-      serviceStatus: 'Ready',
     },
   )
 
@@ -44,7 +43,6 @@ export default function AddBikeModal({
       name: '',
       vin: '',
       engineCapacity: '',
-      serviceStatus: 'Ready',
     })
     setErrors({})
   }
@@ -70,7 +68,7 @@ export default function AddBikeModal({
       <div className="bg-surface-container-lowest border border-outline-variant max-w-2xl w-full shadow-xl">
         <div className="p-lg border-b border-outline-variant">
           <h2 className="font-headline-md text-lg text-primary font-bold uppercase tracking-tight">
-            {existingBike ? 'EDIT MOTORCYCLE' : 'ADD NEW MOTORCYCLE'}
+            {existingBike ? 'EDIT MOTORCYCLE INFO' : 'MOTORCYCLE INFO'}
           </h2>
         </div>
 
@@ -113,42 +111,23 @@ export default function AddBikeModal({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block font-label-sm text-xs text-primary uppercase tracking-widest mb-3">
-                Engine Capacity (CC)
-              </label>
-              <input
-                type="number"
-                name="engineCapacity"
-                value={formData.engineCapacity}
-                onChange={handleChange}
-                className="w-full border border-outline-variant px-md py-3 font-mono text-sm focus:outline-none focus:border-secondary transition-colors"
-                placeholder="e.g., 1103"
-              />
-              {errors.engineCapacity && (
-                <p className="text-error text-xs mt-2 font-label-sm">
-                  {errors.engineCapacity}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block font-label-sm text-xs text-primary uppercase tracking-widest mb-3">
-                Service Status
-              </label>
-              <select
-                name="serviceStatus"
-                value={formData.serviceStatus}
-                onChange={handleChange}
-                className="w-full border border-outline-variant px-md py-3 font-body-md text-sm focus:outline-none focus:border-secondary transition-colors"
-              >
-                <option value="Ready">Ready</option>
-                <option value="In Service">In Service</option>
-                <option value="In Diagnosis">In Diagnosis</option>
-                <option value="In Workshop">In Workshop</option>
-              </select>
-            </div>
+          <div>
+            <label className="block font-label-sm text-xs text-primary uppercase tracking-widest mb-3">
+              Engine Capacity (CC)
+            </label>
+            <input
+              type="number"
+              name="engineCapacity"
+              value={formData.engineCapacity}
+              onChange={handleChange}
+              className="w-full border border-outline-variant px-md py-3 font-mono text-sm focus:outline-none focus:border-secondary transition-colors"
+              placeholder="e.g., 1103"
+            />
+            {errors.engineCapacity && (
+              <p className="text-error text-xs mt-2 font-label-sm">
+                {errors.engineCapacity}
+              </p>
+            )}
           </div>
 
           <div className="flex gap-3 justify-end pt-6 border-t border-outline-variant">

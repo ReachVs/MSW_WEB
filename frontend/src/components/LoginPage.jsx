@@ -14,16 +14,33 @@ export default function LoginPage({ onLoginSuccess, onNavigate }) {
     setError('')
     setIsLoading(true)
 
-    // Simulate login delay
-    setTimeout(() => {
-      if (email && password) {
+    try {
+      const response = await fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // Assuming your API returns a token like { access_token: '...' }
+        localStorage.setItem('authToken', data.access_token)
         onLoginSuccess()
-        setIsLoading(false)
       } else {
-        setError('Please enter valid credentials')
-        setIsLoading(false)
+        // Handle API errors (e.g., invalid credentials)
+        setError(data.message || 'Login failed. Please check your credentials.')
       }
-    }, 1000)
+    } catch (err) {
+      // Handle network errors
+      setError('Network error. Please try again later.')
+      console.error('Login network error:', err)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

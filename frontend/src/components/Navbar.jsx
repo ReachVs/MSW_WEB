@@ -19,13 +19,20 @@ export default function Navbar({
 
   return (
     <nav className="w-full top-0 sticky z-50 bg-background border-b border-on-surface/10 overflow-hidden">
-      <div className="w-full min-h-24 px-sm md:px-margin py-md grid grid-cols-1 sm:grid-cols-[220px_minmax(0,1fr)] lg:grid-cols-[220px_minmax(560px,1fr)_280px] items-center gap-md lg:gap-lg">
+      <div className="w-full min-h-24 px-sm md:px-margin py-md grid grid-cols-1 sm:grid-cols-[300px_minmax(0,1fr)] lg:grid-cols-[300px_minmax(560px,1fr)_280px] items-center gap-md lg:gap-lg">
         <button
           type="button"
-          className="w-[220px] justify-self-start font-display-xl text-[32px] uppercase tracking-tighter text-primary cursor-pointer select-none text-left whitespace-nowrap"
+          className="flex w-[300px] items-center gap-3 justify-self-start text-primary cursor-pointer select-none text-left"
           onClick={() => onNavigate('landing')}
         >
-          MAD APE
+          <img
+            src="/madape-logo.PNG"
+            alt="Mad Ape logo"
+            className="h-12 w-auto object-contain"
+          />
+          <span className="font-display-xl text-[32px] uppercase tracking-tighter whitespace-nowrap">
+            MAD APE
+          </span>
         </button>
 
         {/* Desktop Navigation Links */}
@@ -57,12 +64,6 @@ export default function Navbar({
         <div className="flex w-full lg:w-[280px] gap-sm md:gap-md items-center justify-start sm:justify-end justify-self-end">
           {isAuthenticated ? (
             <>
-              <button
-                onClick={() => onNavigate('garage')}
-                className="hidden sm:inline-flex w-28 h-9 items-center justify-center text-center font-label-sm text-xs uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all whitespace-nowrap"
-              >
-                My Garage
-              </button>
               <button
                 onClick={onLogout}
                 className="w-28 h-9 inline-flex items-center justify-center text-center bg-primary text-on-primary font-label-sm text-xs uppercase tracking-widest hover:bg-secondary transition-all active:scale-95"
@@ -114,17 +115,6 @@ export default function Navbar({
               {link.label}
             </button>
           ))}
-          {isAuthenticated && (
-            <button
-              onClick={() => {
-                onNavigate('garage')
-                setMobileMenuOpen(false)
-              }}
-              className="text-left font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant hover:text-primary py-2"
-            >
-              My Garage
-            </button>
-          )}
         </div>
       )}
     </nav>

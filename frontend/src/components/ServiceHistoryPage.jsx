@@ -1,67 +1,154 @@
-import React, { useState } from 'react'
-import Toast from './Toast'
+import React, { useState, useEffect } from 'react'
 
-export default function ServiceHistoryPage({ logs }) {
+function formatStatusLabel(status) {
+  if (status === 'completed') return 'Completed'
+  if (status === 'cancelled') return 'Cancelled'
+  if (status === 'ready_pickup') return 'Ready Pickup'
+  if (status === 'waiting_part') return 'Waiting Part'
+  return (status || 'completed').replace(/_/g, ' ')
+}
+
+export default function ServiceHistoryPage() {
   const [expandedLog, setExpandedLog] = useState(null)
-  const [toast, setToast] = useState(null)
+
+  const [logs, setLogs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [deletingId, setDeletingId] = useState(null)
+  const [actionMessage, setActionMessage] = useState(null)
 
   // Filter, Search, Sort, Pagination States
-  const [statusFilter, setStatusFilter] = useState('All')
+  const [statusFilter, setStatusFilter] = useState('completed')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('newest')
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 5
 
-  // Detailed info database to show when expanded
+  useEffect(() => {
+    const fetchCompletedBookings = async () => {
+      const token = localStorage.getItem('authToken')
+      if (!token) {
+        setError('Authentication token not found. Please log in.')
+        setLoading(false)
+        return
+      }
+
+      try {
+        const response = await fetch('http://localhost:8080/api/bookings/history', {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        })
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            setError('Unauthorized. Please log in again.')
+          } else {
+            setError(`Failed to fetch service history: ${response.statusText}`)
+          }
+          setLoading(false)
+          return
+        }
+
+        const data = await response.json()
+
+        const mappedLogs = data.data.map((booking) => ({
+          id: booking.id,
+          date: new Date(booking.ends_at || booking.updated_at).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+          }).toUpperCase(),
+          sortDate: booking.updated_at || booking.ends_at,
+          unit: booking.bike_name ? `${booking.bike_name} ${booking.model}` : (booking.notes || booking.service_name),
+          plateNumber: booking.plate_number || 'N/A',
+          serviceType: booking.service_name,
+          fee: '$' + Number(booking.total_amount || 0).toFixed(2),
+          status: booking.status,
+          statusLabel: formatStatusLabel(booking.status),
+          notes: booking.notes,
+          mechanic: booking.mechanic ? booking.mechanic.name : 'Unassigned',
+        }))
+        setLogs(mappedLogs)
+      } catch (err) {
+        setError(`Network error: ${err.message}`)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCompletedBookings()
+  }, [])
+
+  // Detailed info database (kept for now, but ideally would come from backend)
   const detailsDatabase = {
-    'MA-992-04': {
-      technician: 'Marcus R. (Lead Technician)',
+    // These are placeholders, actual data should come from backend if available
+    // For now, we'll use log.notes and log.mechanic for diagnostics and technician
+    'default': {
       checklist: [
-        'Desmodromic valve clearance inspection & adjustment (Optimal tolerances met)',
-        'Spark plugs replacement (OEM NGK Laser Iridium)',
-        'Air filter cartridge swap (Sprint Filter P08)',
-        'Timing belt replacement & tensioning',
-        'Engine coolant flush & replacement (Motul Motocool)',
+        'General diagnostic scans completed',
+        'Standard multipoint safety inspection',
       ],
-      diagnostics:
-        'Fault logs scanned: Clean. Compression test: Cylinder 1 (14.2 bar), Cylinder 2 (14.1 bar), Cylinder 3 (14.2 bar), Cylinder 4 (14.0 bar). Peak tolerances perfectly matched to Ducati factory requirements.',
-      partsReplaced:
-        'Valve shims, Spark plugs, Air filter, Timing belts, Oil filter',
-    },
-    'MA-881-12': {
-      technician: 'Marcus R. (Lead Technician)',
-      checklist: [
-        'ECU diagnostic mapping & firmware updates',
-        'Dynamic map calibration for Akrapovic titanium full system',
-        'Ignition timing optimization (98 RON fuel calibration)',
-        'Quickshifter & Auto-blipper trigger times tuning',
-        'Ride-by-wire throttle response linearization',
-      ],
-      diagnostics:
-        'Initial: Lean AFR detected in mid-range. Final: Calibrated to target AFR of 13.2:1 across peak torque band. Dyno certified +7.4 WHP gains verified.',
-      partsReplaced: 'None (Software recalibration & Dyno diagnostic cycles)',
-    },
-    'MA-765-90': {
-      technician: 'Sarah L. (Fluid Systems Expert)',
-      checklist: [
-        'Brake fluid flush & replacement (Brembo LCF 600 Plus)',
-        'Clutch slave cylinder bleed & fluid flush',
-        'Radiator fluid flush & anti-cavitation agent add',
-        'Front fork fluid check & seal integrity scan',
-      ],
-      diagnostics:
-        'Brake fluid water content measured at 2.4% prior to service (Warning threshold). Post-flush water content: 0.0%. Brake pressure response restored.',
-      partsReplaced: 'Brake fluid, sealing washers, copper crush gaskets',
-    },
+      partsReplaced: 'Standard consumables',
+    }
   }
 
   const toggleExpand = (id) => {
     setExpandedLog((prev) => (prev === id ? null : id))
   }
 
-  // Filter logs by status
+  const handleRemoveLog = async (logId) => {
+    const token = localStorage.getItem('authToken')
+
+    if (!token) {
+      setError('Authentication token not found. Please log in.')
+      return
+    }
+
+    const confirmed = window.confirm(
+      'Remove this archived service record from your history?'
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    setDeletingId(logId)
+    setActionMessage(null)
+    setError(null)
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/bookings/${logId}`, {
+        method: 'DELETE',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const data = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || 'Failed to remove the selected archive record.'
+        )
+      }
+
+      setLogs((prevLogs) => prevLogs.filter((log) => log.id !== logId))
+      setExpandedLog((prevExpanded) =>
+        prevExpanded === logId ? null : prevExpanded
+      )
+      setActionMessage(data.message || 'Service archive record removed.')
+    } catch (err) {
+      setError(err.message || 'Failed to remove the selected archive record.')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   const filteredByStatus =
-    statusFilter === 'All'
+    statusFilter === 'all'
       ? logs
       : logs.filter((log) => log.status === statusFilter)
 
@@ -69,7 +156,7 @@ export default function ServiceHistoryPage({ logs }) {
   const filteredBySearch = filteredByStatus.filter((log) => {
     const searchLower = searchQuery.toLowerCase()
     return (
-      log.id.toLowerCase().includes(searchLower) ||
+      String(log.id).toLowerCase().includes(searchLower) || // Ensure ID is string for search
       log.unit.toLowerCase().includes(searchLower) ||
       log.serviceType.toLowerCase().includes(searchLower)
     )
@@ -78,9 +165,9 @@ export default function ServiceHistoryPage({ logs }) {
   // Sort filtered logs
   const sortedLogs = [...filteredBySearch].sort((a, b) => {
     if (sortBy === 'newest') {
-      return filteredBySearch.indexOf(a) - filteredBySearch.indexOf(b)
+      return new Date(b.sortDate) - new Date(a.sortDate)
     } else if (sortBy === 'oldest') {
-      return filteredBySearch.indexOf(b) - filteredBySearch.indexOf(a)
+      return new Date(a.sortDate) - new Date(b.sortDate)
     } else if (sortBy === 'price-high') {
       const priceA = parseInt(a.fee.replace(/[^0-9]/g, ''))
       const priceB = parseInt(b.fee.replace(/[^0-9]/g, ''))
@@ -98,45 +185,30 @@ export default function ServiceHistoryPage({ logs }) {
   const startIndex = (currentPage - 1) * itemsPerPage
   const paginatedLogs = sortedLogs.slice(startIndex, startIndex + itemsPerPage)
 
-  // Export function
-  const handleExport = () => {
-    const exportData = sortedLogs.map((log) => ({
-      'Ref ID': log.id,
-      Date: log.date,
-      Unit: log.unit,
-      VIN: log.vin,
-      'Service Type': log.serviceType,
-      Fee: log.fee,
-      Status: log.status,
-    }))
+  useEffect(() => {
+    if (currentPage > 1 && currentPage > Math.max(totalPages, 1)) {
+      setCurrentPage(Math.max(totalPages, 1))
+    }
+  }, [currentPage, totalPages])
 
-    const dataStr = JSON.stringify(exportData, null, 2)
-    const dataBlob = new Blob([dataStr], { type: 'application/json' })
-    const url = URL.createObjectURL(dataBlob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `service-history-${new Date().toISOString().split('T')[0]}.json`
-    link.click()
-    URL.revokeObjectURL(url)
+  if (loading) {
+    return (
+      <div className="flex-grow p-lg flex items-center justify-center">
+        <p className="text-primary font-body-md">Loading service history...</p>
+      </div>
+    )
+  }
 
-    setToast({
-      message: `Exported ${sortedLogs.length} service records`,
-      type: 'success',
-    })
+  if (error) {
+    return (
+      <div className="flex-grow p-lg flex items-center justify-center">
+        <p className="text-secondary font-body-md">Error: {error}</p>
+      </div>
+    )
   }
 
   return (
     <div className="flex-grow p-lg">
-      {/* Toast */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          duration={3000}
-          onClose={() => setToast(null)}
-        />
-      )}
-
       <div className="max-w-7xl mx-auto">
         {/* Page Header */}
         <div className="mb-xl">
@@ -166,9 +238,9 @@ export default function ServiceHistoryPage({ logs }) {
                 }}
                 className="w-full border border-outline-variant px-3 py-2 font-body-md text-sm focus:outline-none focus:border-secondary"
               >
-                <option value="All">All Services</option>
-                <option value="Completed">Completed</option>
-                <option value="In Progress">In Progress</option>
+                <option value="completed">Completed Services</option>
+                <option value="cancelled">Cancelled Services</option>
+                <option value="all">All History</option>
               </select>
             </div>
 
@@ -207,15 +279,6 @@ export default function ServiceHistoryPage({ logs }) {
             </div>
           </div>
 
-          {/* Export Button */}
-          <div className="flex gap-3 justify-end pt-2 border-t border-outline-variant">
-            <button
-              onClick={handleExport}
-              className="border border-primary text-primary px-lg py-md font-label-sm text-xs uppercase tracking-widest hover:bg-primary hover:text-white transition-all active:scale-[0.98]"
-            >
-              ↓ Export as JSON
-            </button>
-          </div>
         </div>
 
         {/* Results Summary */}
@@ -224,6 +287,12 @@ export default function ServiceHistoryPage({ logs }) {
           {Math.min(startIndex + itemsPerPage, sortedLogs.length)} of{' '}
           {sortedLogs.length} records
         </div>
+
+        {actionMessage && (
+          <div className="mb-4 border border-green-600 bg-green-50 px-4 py-3 font-body-md text-sm text-green-700">
+            {actionMessage}
+          </div>
+        )}
 
         {/* Records Table */}
         {sortedLogs.length > 0 ? (
@@ -259,18 +328,7 @@ export default function ServiceHistoryPage({ logs }) {
                   <tbody className="divide-y divide-outline-variant font-body-md text-sm">
                     {paginatedLogs.map((log) => {
                       const isExpanded = expandedLog === log.id
-                      const details = detailsDatabase[log.id] || {
-                        technician: 'Marcus R.',
-                        checklist: [
-                          'General diagnostic scans completed',
-                          'Standard multipoint safety inspection',
-                        ],
-                        diagnostics:
-                          log.notes ||
-                          'Routine check. Performance logs registered optimal.',
-                        partsReplaced: 'Standard consumables',
-                      }
-
+                      const details = detailsDatabase['default'] // Use default details
                       return (
                         <React.Fragment key={log.id}>
                           <tr
@@ -287,7 +345,7 @@ export default function ServiceHistoryPage({ logs }) {
                                 {log.unit}
                               </div>
                               <div className="text-[10px] text-on-surface-variant opacity-60 uppercase mono-data select-all">
-                                VIN: {log.vin}
+                                Plate: {log.plateNumber}
                               </div>
                             </td>
                             <td className="py-md px-md">
@@ -301,25 +359,30 @@ export default function ServiceHistoryPage({ logs }) {
                             <td className="py-md px-md">
                               <div className="flex items-center space-x-1.5">
                                 <span
-                                  className={`w-2 h-2 rounded-none ${log.status === 'Completed' ? 'bg-green-600' : 'bg-secondary animate-pulse'}`}
+                                  className={`w-2 h-2 rounded-none ${log.status === 'completed' ? 'bg-green-600' : 'bg-error'}`}
                                 ></span>
                                 <span className="font-label-sm text-[10px] uppercase tracking-wider text-on-surface">
-                                  {log.status}
+                                  {log.statusLabel}
                                 </span>
                               </div>
-                              {log.status === 'In Progress' && (
-                                <div className="mt-2 h-1.5 w-16 bg-surface-container-highest">
-                                  <div className="h-full bg-secondary w-[45%] animate-pulse"></div>
-                                </div>
-                              )}
                             </td>
                             <td className="py-md px-md text-right">
-                              <button
-                                onClick={() => toggleExpand(log.id)}
-                                className="font-label-sm text-xs text-primary hover:text-secondary transition-colors underline underline-offset-4 decoration-outline-variant group-hover:decoration-secondary uppercase font-bold"
-                              >
-                                {isExpanded ? 'Collapse Data' : 'Expand Data'}
-                              </button>
+                              <div className="flex items-center justify-end gap-3">
+                                <button
+                                  onClick={() => toggleExpand(log.id)}
+                                  className="font-label-sm text-xs text-primary hover:text-secondary transition-colors underline underline-offset-4 decoration-outline-variant group-hover:decoration-secondary uppercase font-bold"
+                                >
+                                  {isExpanded ? 'Collapse Data' : 'Expand Data'}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveLog(log.id)}
+                                  disabled={deletingId === log.id}
+                                  className="font-label-sm text-xs text-red-600 hover:text-red-700 transition-colors uppercase font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {deletingId === log.id ? 'Removing...' : 'Remove'}
+                                </button>
+                              </div>
                             </td>
                           </tr>
 
@@ -357,7 +420,7 @@ export default function ServiceHistoryPage({ logs }) {
                                         DIAGNOSTICS & TELEMETRY NOTES
                                       </span>
                                       <p className="text-on-surface-variant leading-relaxed">
-                                        {details.diagnostics}
+                                        {log.notes || details.diagnostics}
                                       </p>
                                     </div>
                                   </div>
@@ -369,7 +432,7 @@ export default function ServiceHistoryPage({ logs }) {
                                         ASSIGNED SPECIALIST
                                       </span>
                                       <div className="text-on-surface-variant">
-                                        {details.technician}
+                                        {log.mechanic}
                                       </div>
                                     </div>
                                     <hr className="border-outline-variant" />

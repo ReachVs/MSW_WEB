@@ -12,7 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->statefulApi();
+        // Removed $middleware->statefulApi(); to disable CSRF for API routes
+        // as frontend and backend are on different origins for token-based auth.
+        // The 'api' middleware group is stateless by default and does not include CSRF protection.
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

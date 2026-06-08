@@ -1,4 +1,13 @@
-export default function Sidebar({ currentView, onNavigate, onBookService }) {
+import { getProfileDisplayName } from '../utils/profileStorage'
+
+export default function Sidebar({
+  currentView,
+  onNavigate,
+  onBookService,
+  profile,
+}) {
+  const displayName = getProfileDisplayName(profile)
+
   const menuItems = [
     { id: 'landing', label: 'Home', icon: 'home' },
     { id: 'garage', label: 'My Garage', icon: 'motorcycle' },
@@ -12,7 +21,7 @@ export default function Sidebar({ currentView, onNavigate, onBookService }) {
       {/* Book Service Action */}
       <button
         onClick={onBookService}
-        className="mx-sm mb-md bg-secondary text-on-primary py-sm px-md font-label-sm tracking-widest hover:bg-primary transition-all active:scale-95 text-center uppercase tracking-[0.2em]"
+        className="mx-sm mb-md bg-secondary text-on-primary py-sm px-md font-label-sm tracking-widest hover:bg-primary transition-all active:scale-95 text-center uppercase"
       >
         BOOK SERVICE
       </button>
@@ -59,7 +68,7 @@ export default function Sidebar({ currentView, onNavigate, onBookService }) {
               CLIENT
             </p>
             <p className="font-bold text-primary truncate w-32 uppercase text-xs">
-              Dominic T.
+              {displayName}
             </p>
           </div>
         </div>

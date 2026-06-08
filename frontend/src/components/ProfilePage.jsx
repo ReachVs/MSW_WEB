@@ -1,14 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { getStoredProfile, saveStoredProfile } from '../utils/profileStorage'
 
-export default function ProfilePage({ onLogout }) {
-  const [user, setUser] = useState({
-    firstName: 'Dominic',
-    lastName: 'Turner',
-    email: 'dominic.turner@madape.com',
-    phone: '+1 (555) 123-4567',
-    membershipTier: 'PRO',
-    joinDate: '2024-06-15',
-  })
+export default function ProfilePage({ onLogout, profile, onProfileSave }) {
+  const [user, setUser] = useState(() => profile || getStoredProfile())
 
   const [savedSettings, setSavedSettings] = useState({
     emailNotifications: true,
@@ -18,11 +12,20 @@ export default function ProfilePage({ onLogout }) {
   })
 
   const [editMode, setEditMode] = useState(false)
-  const [tempUser, setTempUser] = useState(user)
+  const [tempUser, setTempUser] = useState(() => profile || getStoredProfile())
   const [saveMessage, setSaveMessage] = useState('')
 
+  useEffect(() => {
+    const latestProfile = profile || getStoredProfile()
+    setUser(latestProfile)
+    setTempUser(latestProfile)
+  }, [profile])
+
   const handleSaveProfile = () => {
-    setUser(tempUser)
+    const savedProfile = saveStoredProfile(tempUser)
+    setUser(savedProfile)
+    setTempUser(savedProfile)
+    onProfileSave?.(savedProfile)
     setSaveMessage('Profile updated successfully')
     setEditMode(false)
     setTimeout(() => setSaveMessage(''), 3000)
@@ -171,14 +174,6 @@ export default function ProfilePage({ onLogout }) {
                     </p>
                   </div>
 
-                  <div>
-                    <label className="font-label-sm text-xs uppercase tracking-widest text-outline mb-1 block font-bold">
-                      Membership
-                    </label>
-                    <p className="font-body-md text-sm text-secondary font-bold">
-                      {user.membershipTier} MEMBER
-                    </p>
-                  </div>
                 </>
               )}
             </div>

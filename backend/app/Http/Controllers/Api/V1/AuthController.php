@@ -22,25 +22,31 @@ class AuthController extends Controller
         $role = Role::findOrCreate('customer');
         $user->assignRole($role);
 
-        Auth::login($user);
-        $request->session()->regenerate();
+        // For API registration, also issue a token
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-        return new UserResource($user);
+        return (new UserResource($user))
+            ->additional(['access_token' => $token, 'token_type' => 'Bearer']);
     }
 
-    public function login(LoginRequest $request): UserResource
+    public function login(LoginRequest $request): JsonResponse
     {
         $credentials = $request->safe()->only(['email', 'password']);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (! Auth::attempt($credentials)) { // No session regeneration needed for API token login
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials do not match our records.'],
             ]);
         }
 
-        $request->session()->regenerate();
+        $user = $request->user();
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-        return new UserResource($request->user());
+        return response()->json([
+            'data' => new UserResource($user),
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+        ]);
     }
 
     public function me(Request $request): UserResource
@@ -50,11 +56,9 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        Auth::guard('web')->logout();
+        // Revoke the current user's token
+        $request->user()->currentAccessToken()->delete();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return response()->json(['message' => 'Logged out']);
+        return response()->json(['message' => 'Logged out successfully']);
     }
 }

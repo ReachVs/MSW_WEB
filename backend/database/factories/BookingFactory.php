@@ -25,7 +25,7 @@ class BookingFactory extends Factory
             'customer_email' => fake()->safeEmail(),
             'starts_at' => $startsAt,
             'ends_at' => (clone $startsAt)->modify('+1 hour'),
-            'status' => 'confirmed',
+            'status' => Booking::STATUS_PENDING,
             'notes' => fake()->optional()->sentence(),
         ];
     }

@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { getStoredProfile, saveStoredProfile } from '../utils/profileStorage'
 
 export default function ProfilePage({ onLogout, profile, onProfileSave }) {
-  const [user, setUser] = useState(() => profile || getStoredProfile())
+  const activeProfile = profile || getStoredProfile()
 
   const [savedSettings, setSavedSettings] = useState({
     emailNotifications: true,
@@ -12,18 +12,11 @@ export default function ProfilePage({ onLogout, profile, onProfileSave }) {
   })
 
   const [editMode, setEditMode] = useState(false)
-  const [tempUser, setTempUser] = useState(() => profile || getStoredProfile())
+  const [tempUser, setTempUser] = useState(() => activeProfile)
   const [saveMessage, setSaveMessage] = useState('')
-
-  useEffect(() => {
-    const latestProfile = profile || getStoredProfile()
-    setUser(latestProfile)
-    setTempUser(latestProfile)
-  }, [profile])
 
   const handleSaveProfile = () => {
     const savedProfile = saveStoredProfile(tempUser)
-    setUser(savedProfile)
     setTempUser(savedProfile)
     onProfileSave?.(savedProfile)
     setSaveMessage('Profile updated successfully')
@@ -32,7 +25,7 @@ export default function ProfilePage({ onLogout, profile, onProfileSave }) {
   }
 
   const handleCancel = () => {
-    setTempUser(user)
+    setTempUser(activeProfile)
     setEditMode(false)
   }
 
@@ -152,7 +145,7 @@ export default function ProfilePage({ onLogout, profile, onProfileSave }) {
                       Name
                     </label>
                     <p className="font-body-md text-sm text-on-surface">
-                      {user.firstName} {user.lastName}
+                      {activeProfile.firstName} {activeProfile.lastName}
                     </p>
                   </div>
 
@@ -161,7 +154,7 @@ export default function ProfilePage({ onLogout, profile, onProfileSave }) {
                       Email
                     </label>
                     <p className="font-body-md text-sm text-on-surface break-all">
-                      {user.email}
+                      {activeProfile.email}
                     </p>
                   </div>
 
@@ -170,7 +163,7 @@ export default function ProfilePage({ onLogout, profile, onProfileSave }) {
                       Phone
                     </label>
                     <p className="font-body-md text-sm text-on-surface">
-                      {user.phone}
+                      {activeProfile.phone}
                     </p>
                   </div>
                 </>
@@ -305,7 +298,7 @@ export default function ProfilePage({ onLogout, profile, onProfileSave }) {
           <div className="text-center py-lg border-t border-outline-variant">
             <p className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">
               Member Since{' '}
-              {new Date(user.joinDate).toLocaleDateString('en-US', {
+              {new Date(activeProfile.joinDate).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',

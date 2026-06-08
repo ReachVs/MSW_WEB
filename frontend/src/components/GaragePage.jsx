@@ -160,13 +160,23 @@ function loadStoredBikes() {
   }
 }
 
+function getInitialGarageState() {
+  const storedBikes = loadStoredBikes()
+
+  return {
+    bikes: storedBikes,
+    loading: storedBikes.length === 0,
+  }
+}
+
 export default function GaragePage() {
+  const initialGarageState = getInitialGarageState()
   const [expandedBikeId, setExpandedBikeId] = useState(null)
   const [serviceRequestStep, setServiceRequestStep] = useState('closed')
   const [currentBikeInfo, setCurrentBikeInfo] = useState(null)
   const [pendingBookingRequest, setPendingBookingRequest] = useState(null)
-  const [bikes, setBikes] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [bikes, setBikes] = useState(initialGarageState.bikes)
+  const [loading, setLoading] = useState(initialGarageState.loading)
   const [toast, setToast] = useState(null)
   const [confirmCancel, setConfirmCancel] = useState(null)
   const [sensors, setSensors] = useState({
@@ -194,12 +204,6 @@ export default function GaragePage() {
   }, [])
 
   useEffect(() => {
-    const storedBikes = loadStoredBikes()
-    if (storedBikes.length > 0) {
-      setBikes(storedBikes)
-      setLoading(false)
-    }
-
     let isMounted = true
 
     const fetchActiveBookings = async ({ silent = false } = {}) => {
@@ -490,6 +494,11 @@ export default function GaragePage() {
       />
 
       <BookingScheduleModal
+        key={
+          serviceRequestStep === 'schedule'
+            ? 'schedule-open'
+            : 'schedule-closed'
+        }
         isOpen={serviceRequestStep === 'schedule'}
         onClose={handleCloseModals}
         onConfirm={handleScheduleConfirm}

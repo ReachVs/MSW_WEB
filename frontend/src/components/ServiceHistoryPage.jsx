@@ -192,14 +192,9 @@ export default function ServiceHistoryPage() {
 
   // Pagination
   const totalPages = Math.ceil(sortedLogs.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
+  const safeCurrentPage = Math.min(currentPage, Math.max(totalPages, 1))
+  const startIndex = (safeCurrentPage - 1) * itemsPerPage
   const paginatedLogs = sortedLogs.slice(startIndex, startIndex + itemsPerPage)
-
-  useEffect(() => {
-    if (currentPage > 1 && currentPage > Math.max(totalPages, 1)) {
-      setCurrentPage(Math.max(totalPages, 1))
-    }
-  }, [currentPage, totalPages])
 
   if (loading) {
     return (
@@ -486,21 +481,23 @@ export default function ServiceHistoryPage() {
             {totalPages > 1 && (
               <div className="mt-lg flex items-center justify-between">
                 <div className="font-label-sm text-xs text-on-surface-variant uppercase tracking-widest">
-                  Page {currentPage} of {totalPages}
+                  Page {safeCurrentPage} of {totalPages}
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
+                    onClick={() =>
+                      setCurrentPage(Math.max(1, safeCurrentPage - 1))
+                    }
+                    disabled={safeCurrentPage === 1}
                     className="border border-outline-variant text-on-surface px-md py-2 font-label-sm text-xs uppercase tracking-widest hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
                     ← Previous
                   </button>
                   <button
                     onClick={() =>
-                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                      setCurrentPage(Math.min(totalPages, safeCurrentPage + 1))
                     }
-                    disabled={currentPage === totalPages}
+                    disabled={safeCurrentPage === totalPages}
                     className="border border-outline-variant text-on-surface px-md py-2 font-label-sm text-xs uppercase tracking-widest hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
                     Next →

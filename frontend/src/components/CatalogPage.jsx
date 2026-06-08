@@ -308,6 +308,7 @@ export default function CatalogPage({ onBook }) {
     return (
       <div className="p-lg w-full max-w-4xl mx-auto">
         <BookingScheduleModal
+          key={showSchedule ? 'schedule-open' : 'schedule-closed'}
           isOpen={showSchedule}
           onClose={() => setShowSchedule(false)}
           onConfirm={handleSubmitBooking}
@@ -537,8 +538,7 @@ export default function CatalogPage({ onBook }) {
             <div className="flex flex-col gap-lg">
               {Object.entries(catalogData[expandedMain].subcategories || {})
                 .filter(
-                  ([subKey, subData]) =>
-                    subKey !== '_root' && subKey !== 'General',
+                  ([subKey]) => subKey !== '_root' && subKey !== 'General',
                 ) // Filter out root/general subcategories
                 .map(([subKey, subData]) => {
                   const isExpanded = expandedSub[`${expandedMain}-${subKey}`]

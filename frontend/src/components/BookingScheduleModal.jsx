@@ -80,17 +80,6 @@ export default function BookingScheduleModal({
   useEffect(() => {
     if (!isOpen) return
 
-    const today = new Date()
-    setCurrentMonth(startOfMonth(today))
-    setSelectedDate(today)
-    setSelectedSlot(null)
-    setNotes('')
-    setError(null)
-  }, [isOpen])
-
-  useEffect(() => {
-    if (!isOpen) return
-
     const fetchMonth = async () => {
       setLoadingMonth(true)
       try {

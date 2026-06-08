@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\Api\V1\AuthController;
-use App\Http\Controllers\Api\V1\CalendarController;
-use App\Http\Controllers\Api\V1\Admin\CalendarController as AdminCalendarController;
 use App\Http\Controllers\Api\V1\Admin\BookingManagementController;
+use App\Http\Controllers\Api\V1\Admin\CalendarController as AdminCalendarController;
+use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BookingController;
+use App\Http\Controllers\Api\V1\CalendarController;
 use App\Http\Controllers\Api\V1\ServicesController;
 use Illuminate\Support\Facades\Route;
 

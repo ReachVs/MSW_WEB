@@ -64,10 +64,10 @@ class WorkshopCalendar
         $settings = self::settings();
         $selectedDate = $date instanceof Carbon ? $date->copy() : Carbon::parse($date);
         $cursor = CarbonImmutable::parse(
-            $selectedDate->format('Y-m-d') . ' ' . $settings->operating_start_time,
+            $selectedDate->format('Y-m-d').' '.$settings->operating_start_time,
         );
         $end = CarbonImmutable::parse(
-            $selectedDate->format('Y-m-d') . ' ' . $settings->operating_end_time,
+            $selectedDate->format('Y-m-d').' '.$settings->operating_end_time,
         );
         $slots = collect();
 

@@ -111,7 +111,10 @@ export default function ServiceSelectionModal({
     selectedServices.some((service) => service.id === serviceId)
 
   const calculateTotal = () =>
-    selectedServices.reduce((sum, service) => sum + Number(service.price || 0), 0)
+    selectedServices.reduce(
+      (sum, service) => sum + Number(service.price || 0),
+      0,
+    )
 
   const handleSubmit = () => {
     if (selectedServices.length === 0) {
@@ -135,7 +138,8 @@ export default function ServiceSelectionModal({
               </h2>
               {bikeInfo && (
                 <p className="mt-1 text-sm font-body-sm text-on-surface-variant">
-                  Plate: {bikeInfo.plateNumber} | Engine Capacity: {bikeInfo.engineCapacity} CC
+                  Plate: {bikeInfo.plateNumber} | Engine Capacity:{' '}
+                  {bikeInfo.engineCapacity} CC
                 </p>
               )}
             </div>
@@ -162,10 +166,14 @@ export default function ServiceSelectionModal({
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-lg">
           {loading && (
-            <p className="py-md text-center font-body-md text-primary">Loading services...</p>
+            <p className="py-md text-center font-body-md text-primary">
+              Loading services...
+            </p>
           )}
           {error && (
-            <p className="py-md text-center font-body-md text-error">Error: {error}</p>
+            <p className="py-md text-center font-body-md text-error">
+              Error: {error}
+            </p>
           )}
 
           {!loading && !error && catalogData && (
@@ -185,14 +193,22 @@ export default function ServiceSelectionModal({
                       }`}
                     >
                       <div className="mb-md">
-                        {getIcon(category.icon, isActive ? 'text-white' : 'text-primary')}
+                        {getIcon(
+                          category.icon,
+                          isActive ? 'text-white' : 'text-primary',
+                        )}
                       </div>
-                      <h3 className={`text-xl font-headline-md font-bold uppercase ${isActive ? 'text-white' : 'text-primary'}`}>
+                      <h3
+                        className={`text-xl font-headline-md font-bold uppercase ${isActive ? 'text-white' : 'text-primary'}`}
+                      >
                         {category.name}
                       </h3>
-                      <p className={`mt-1 text-xs ${isActive ? 'text-white/80' : 'text-outline'}`}>
+                      <p
+                        className={`mt-1 text-xs ${isActive ? 'text-white/80' : 'text-outline'}`}
+                      >
                         {catalogData[category.key]?.subcategories
-                          ? Object.keys(catalogData[category.key].subcategories).length
+                          ? Object.keys(catalogData[category.key].subcategories)
+                              .length
                           : 0}{' '}
                         categories
                       </p>
@@ -217,8 +233,13 @@ export default function ServiceSelectionModal({
                   </div>
 
                   <div className="flex flex-col gap-lg">
-                    {Object.entries(catalogData[expandedMain].subcategories || {})
-                      .filter(([subKey]) => subKey !== '_root' && subKey !== 'General')
+                    {Object.entries(
+                      catalogData[expandedMain].subcategories || {},
+                    )
+                      .filter(
+                        ([subKey]) =>
+                          subKey !== '_root' && subKey !== 'General',
+                      )
                       .map(([subKey, subData]) => {
                         const expandKey = `${expandedMain}-${subKey}`
                         const isExpanded = !!expandedSub[expandKey]
@@ -235,14 +256,18 @@ export default function ServiceSelectionModal({
                           >
                             <button
                               type="button"
-                              onClick={() => toggleSubCategory(expandedMain, subKey)}
+                              onClick={() =>
+                                toggleSubCategory(expandedMain, subKey)
+                              }
                               className="flex w-full items-center justify-between p-md transition-colors hover:bg-surface-container-low"
                             >
                               <div className="flex items-center gap-md">
                                 <span className="material-symbols-outlined text-2xl text-secondary">
                                   {selectableItems[0]?.icon || 'list_alt'}
                                 </span>
-                                <span className="font-bold uppercase">{subData.name}</span>
+                                <span className="font-bold uppercase">
+                                  {subData.name}
+                                </span>
                               </div>
                               <div className="flex items-center gap-md">
                                 <span className="mono-data text-xs text-outline">
@@ -250,7 +275,11 @@ export default function ServiceSelectionModal({
                                 </span>
                                 <span
                                   className="material-symbols-outlined text-outline transition-transform"
-                                  style={{ transform: isExpanded ? 'rotate(180deg)' : 'none' }}
+                                  style={{
+                                    transform: isExpanded
+                                      ? 'rotate(180deg)'
+                                      : 'none',
+                                  }}
                                 >
                                   expand_more
                                 </span>
@@ -283,7 +312,9 @@ export default function ServiceSelectionModal({
                                           ${Number(item.price || 0).toFixed(2)}
                                         </span>
                                       </div>
-                                      <p className="mt-1 text-xs text-outline">{item.description}</p>
+                                      <p className="mt-1 text-xs text-outline">
+                                        {item.description}
+                                      </p>
                                     </div>
                                   </label>
                                 ))}
@@ -299,7 +330,8 @@ export default function ServiceSelectionModal({
               {!expandedMain && (
                 <div className="py-xl text-center text-outline">
                   <p className="font-body-md">
-                    Select a main category above to view subcategories and service options.
+                    Select a main category above to view subcategories and
+                    service options.
                   </p>
                 </div>
               )}
@@ -317,21 +349,21 @@ export default function ServiceSelectionModal({
           </button>
 
           <div className="flex flex-wrap justify-end gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="border border-outline-variant px-lg py-md text-xs font-label-sm uppercase tracking-widest text-on-surface transition-all hover:bg-surface-container-low active:scale-[0.98]"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={selectedServices.length === 0}
-            className="bg-primary px-lg py-md text-xs font-label-sm uppercase tracking-widest text-on-primary transition-all hover:bg-secondary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Confirm Services
-          </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="border border-outline-variant px-lg py-md text-xs font-label-sm uppercase tracking-widest text-on-surface transition-all hover:bg-surface-container-low active:scale-[0.98]"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={selectedServices.length === 0}
+              className="bg-primary px-lg py-md text-xs font-label-sm uppercase tracking-widest text-on-primary transition-all hover:bg-secondary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Confirm Services
+            </button>
           </div>
         </div>
       </div>

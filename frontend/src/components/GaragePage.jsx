@@ -4,7 +4,10 @@ import BookingScheduleModal from './BookingScheduleModal'
 import ServiceSelectionModal from './ServiceSelectionModal'
 import Toast from './Toast'
 import ConfirmModal from './ConfirmModal'
-import { getProfileDisplayName, getStoredProfile } from '../utils/profileStorage'
+import {
+  getProfileDisplayName,
+  getStoredProfile,
+} from '../utils/profileStorage'
 
 const GARAGE_STORAGE_KEY = 'msw-garage-bookings'
 const DEFAULT_BIKE_IMAGE =
@@ -41,7 +44,8 @@ function getMilestone(status) {
   if (status === 'confirmed') return 'Booking accepted and scheduled'
   if (status === 'repair') return 'Motorcycle is currently in repair'
   if (status === 'waiting_part') return 'Repair paused while waiting for parts'
-  if (status === 'ready_pickup') return 'Service completed and ready for collection'
+  if (status === 'ready_pickup')
+    return 'Service completed and ready for collection'
   if (status === 'completed') return 'Work order completed'
   if (status === 'cancelled') return 'Booking cancelled'
   return 'Booking created'
@@ -63,18 +67,28 @@ function getStatusBadgeClass(status) {
 }
 
 function getStatusPanelClass(status) {
-  if (status === 'pending') return 'border-[#6B7280]/30 bg-[#6B7280]/10 text-[#6B7280]'
-  if (status === 'confirmed') return 'border-[#2563EB]/30 bg-[#2563EB]/10 text-[#2563EB]'
-  if (status === 'repair') return 'border-[#F59E0B]/30 bg-[#F59E0B]/10 text-[#F59E0B]'
-  if (status === 'waiting_part') return 'border-[#8B5CF6]/30 bg-[#8B5CF6]/10 text-[#8B5CF6]'
-  if (status === 'ready_pickup') return 'border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981]'
-  if (status === 'completed') return 'border-[#059669]/30 bg-[#059669]/10 text-[#059669]'
-  if (status === 'cancelled') return 'border-[#EF4444]/30 bg-[#EF4444]/10 text-[#EF4444]'
+  if (status === 'pending')
+    return 'border-[#6B7280]/30 bg-[#6B7280]/10 text-[#6B7280]'
+  if (status === 'confirmed')
+    return 'border-[#2563EB]/30 bg-[#2563EB]/10 text-[#2563EB]'
+  if (status === 'repair')
+    return 'border-[#F59E0B]/30 bg-[#F59E0B]/10 text-[#F59E0B]'
+  if (status === 'waiting_part')
+    return 'border-[#8B5CF6]/30 bg-[#8B5CF6]/10 text-[#8B5CF6]'
+  if (status === 'ready_pickup')
+    return 'border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981]'
+  if (status === 'completed')
+    return 'border-[#059669]/30 bg-[#059669]/10 text-[#059669]'
+  if (status === 'cancelled')
+    return 'border-[#EF4444]/30 bg-[#EF4444]/10 text-[#EF4444]'
   return 'border-secondary/20 bg-secondary/[0.02] text-secondary'
 }
 
 function normalizeSelectedServices(booking) {
-  if (Array.isArray(booking.selected_services) && booking.selected_services.length > 0) {
+  if (
+    Array.isArray(booking.selected_services) &&
+    booking.selected_services.length > 0
+  ) {
     return booking.selected_services.map((service) => ({
       id: service.id ?? `${booking.id}-${service.name}`,
       name: service.name,
@@ -98,7 +112,10 @@ function mapBookingToBike(booking) {
   const totalAmount =
     booking.total_amount !== null && booking.total_amount !== undefined
       ? Number(booking.total_amount)
-      : selectedServices.reduce((sum, service) => sum + Number(service.price || 0), 0)
+      : selectedServices.reduce(
+          (sum, service) => sum + Number(service.price || 0),
+          0,
+        )
 
   return {
     id: booking.id,
@@ -109,14 +126,17 @@ function mapBookingToBike(booking) {
     engineCapacity: booking.engine_capacity || 'N/A',
     customerName: booking.customer_name || 'N/A',
     customerEmail: booking.customer_email || 'N/A',
-    bookingDate: booking.booking_date || booking.starts_at?.slice(0, 10) || null,
+    bookingDate:
+      booking.booking_date || booking.starts_at?.slice(0, 10) || null,
     bookingTimeLabel: booking.booking_time_label || 'N/A',
     serviceStatus: formatStatusLabel(booking.status),
     status: booking.status,
     serviceType:
       selectedServices.length > 1
         ? `${selectedServices.length} catalog services`
-        : selectedServices[0]?.name || booking.service_name || 'Service Booking',
+        : selectedServices[0]?.name ||
+          booking.service_name ||
+          'Service Booking',
     lead: 'Unassigned',
     milestone: getMilestone(booking.status),
     image: DEFAULT_BIKE_IMAGE,
@@ -162,7 +182,10 @@ export default function GaragePage() {
           f: +(prev.bmwTireTemp.f + (Math.random() * 0.4 - 0.2)).toFixed(1),
           r: +(prev.bmwTireTemp.r + (Math.random() * 0.4 - 0.2)).toFixed(1),
         },
-        triumphVoltage: +(prev.triumphVoltage + (Math.random() * 0.08 - 0.04)).toFixed(1),
+        triumphVoltage: +(
+          prev.triumphVoltage +
+          (Math.random() * 0.08 - 0.04)
+        ).toFixed(1),
         activeSensors: Math.random() > 0.85 ? (Math.random() > 0.5 ? 5 : 3) : 4,
       }))
     }, 3000)
@@ -183,30 +206,43 @@ export default function GaragePage() {
       const token = localStorage.getItem('authToken')
       if (!token) {
         if (!silent && isMounted) {
-          setToast({ message: 'Authentication token not found. Please log in.', type: 'error' })
+          setToast({
+            message: 'Authentication token not found. Please log in.',
+            type: 'error',
+          })
         }
         return
       }
 
       try {
-        const response = await fetch('http://localhost:8080/api/bookings/active', {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${token}`,
+        const response = await fetch(
+          'http://localhost:8080/api/bookings/active',
+          {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
           },
-        })
+        )
 
         if (!response.ok) {
-          throw new Error(`Failed to load active bookings: ${response.statusText}`)
+          throw new Error(
+            `Failed to load active bookings: ${response.statusText}`,
+          )
         }
 
         const data = await response.json()
         if (isMounted) {
-          setBikes(sortBikesNewestFirst((data.data || []).map(mapBookingToBike)))
+          setBikes(
+            sortBikesNewestFirst((data.data || []).map(mapBookingToBike)),
+          )
         }
       } catch (err) {
         if (!silent && isMounted) {
-          setToast({ message: `Error loading garage: ${err.message}`, type: 'error' })
+          setToast({
+            message: `Error loading garage: ${err.message}`,
+            type: 'error',
+          })
         }
       } finally {
         if (isMounted) {
@@ -277,13 +313,19 @@ export default function GaragePage() {
     const token = localStorage.getItem('authToken')
     const profile = getStoredProfile()
     if (!token) {
-      setToast({ message: 'Authentication token not found. Please log in.', type: 'error' })
+      setToast({
+        message: 'Authentication token not found. Please log in.',
+        type: 'error',
+      })
       handleCloseModals()
       return
     }
 
     if (!pendingBookingRequest) {
-      setToast({ message: 'Booking data is missing. Please try again.', type: 'error' })
+      setToast({
+        message: 'Booking data is missing. Please try again.',
+        type: 'error',
+      })
       handleCloseModals()
       return
     }
@@ -305,7 +347,9 @@ export default function GaragePage() {
           engine_capacity: pendingBookingRequest.bikeInfo.engineCapacity,
           starts_at: scheduleInfo.startsAt,
           service_id: pendingBookingRequest.normalizedServices[0]?.id ?? null,
-          service_name: pendingBookingRequest.normalizedServices.map((service) => service.name).join(', '),
+          service_name: pendingBookingRequest.normalizedServices
+            .map((service) => service.name)
+            .join(', '),
           selected_services: pendingBookingRequest.normalizedServices,
           total_amount: pendingBookingRequest.totalAmount,
           status: 'pending',
@@ -317,18 +361,26 @@ export default function GaragePage() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.message || `Failed to create booking: ${response.statusText}`)
+        throw new Error(
+          errorData.message ||
+            `Failed to create booking: ${response.statusText}`,
+        )
       }
 
       const newBooking = await response.json()
-      setBikes((prev) => sortBikesNewestFirst([mapBookingToBike(newBooking.data), ...prev]))
+      setBikes((prev) =>
+        sortBikesNewestFirst([mapBookingToBike(newBooking.data), ...prev]),
+      )
       setToast({
         message: `${pendingBookingRequest.normalizedServices.length} service(s) added for ${pendingBookingRequest.bikeInfo.name}!`,
         type: 'success',
       })
       handleCloseModals()
     } catch (err) {
-      setToast({ message: `Error adding service: ${err.message}`, type: 'error' })
+      setToast({
+        message: `Error adding service: ${err.message}`,
+        type: 'error',
+      })
     }
   }
 
@@ -336,7 +388,8 @@ export default function GaragePage() {
     const bike = bikes.find((item) => item.id === bikeId)
     if (!bike?.canCancel) {
       setToast({
-        message: 'Bookings can only be cancelled while they are pending or confirmed.',
+        message:
+          'Bookings can only be cancelled while they are pending or confirmed.',
         type: 'error',
       })
       return
@@ -377,17 +430,24 @@ export default function GaragePage() {
 
       const result = await response.json()
       if (!response.ok) {
-        throw new Error(result.message || `Failed to cancel booking: ${response.statusText}`)
+        throw new Error(
+          result.message || `Failed to cancel booking: ${response.statusText}`,
+        )
       }
 
-      setBikes((prev) => prev.filter((bike) => bike.id !== confirmCancel.bikeId))
+      setBikes((prev) =>
+        prev.filter((bike) => bike.id !== confirmCancel.bikeId),
+      )
       setExpandedBikeId((prev) => (prev === confirmCancel.bikeId ? null : prev))
       setToast({
         message: `${confirmCancel.bikeName} booking cancelled successfully.`,
         type: 'success',
       })
     } catch (err) {
-      setToast({ message: `Error cancelling booking: ${err.message}`, type: 'error' })
+      setToast({
+        message: `Error cancelling booking: ${err.message}`,
+        type: 'error',
+      })
     } finally {
       setConfirmCancel(null)
     }
@@ -445,8 +505,9 @@ export default function GaragePage() {
               LIVE WORKSHOP TRACK
             </h1>
             <p className="mt-1 max-w-[36rem] text-sm font-body-md text-on-surface-variant">
-              Real workshop jobs synced from your catalog bookings. Review the selected
-              services, total amount, and live progress for each motorcycle.
+              Real workshop jobs synced from your catalog bookings. Review the
+              selected services, total amount, and live progress for each
+              motorcycle.
             </p>
           </div>
           <div className="flex items-center gap-2 border border-secondary/20 bg-secondary/10 px-3 py-1.5 select-none">
@@ -506,7 +567,9 @@ export default function GaragePage() {
                         Plate: {bike.plateNumber}
                       </p>
                       <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-secondary">
-                        {bike.bookingDate ? `${bike.bookingDate} | ${bike.bookingTimeLabel}` : 'Schedule Pending'}
+                        {bike.bookingDate
+                          ? `${bike.bookingDate} | ${bike.bookingTimeLabel}`
+                          : 'Schedule Pending'}
                       </p>
                     </div>
                     <div className="text-right">
@@ -530,7 +593,9 @@ export default function GaragePage() {
                         <span className="font-mono text-2xl font-bold text-primary">
                           {bike.engineCapacity}
                         </span>
-                        <span className="font-mono text-[10px] text-outline">CC</span>
+                        <span className="font-mono text-[10px] text-outline">
+                          CC
+                        </span>
                       </div>
                     </div>
 
@@ -587,7 +652,9 @@ export default function GaragePage() {
                     </div>
                   </div>
 
-                  <div className={`mb-6 border p-3 ${getStatusPanelClass(bike.status)}`}>
+                  <div
+                    className={`mb-6 border p-3 ${getStatusPanelClass(bike.status)}`}
+                  >
                     <div className="mb-1 flex justify-between items-center">
                       <span className="font-bold text-[8px] uppercase tracking-[0.2em]">
                         Workshop Progress
@@ -607,65 +674,117 @@ export default function GaragePage() {
                         Booking Breakdown
                       </p>
                       <div className="flex justify-between border-b border-outline-variant pb-1">
-                        <span className="uppercase text-on-surface-variant">Booking Ref</span>
-                        <span className="font-bold text-primary">#{bike.bookingId}</span>
+                        <span className="uppercase text-on-surface-variant">
+                          Booking Ref
+                        </span>
+                        <span className="font-bold text-primary">
+                          #{bike.bookingId}
+                        </span>
                       </div>
                       <div className="flex justify-between border-b border-outline-variant pb-1">
-                        <span className="uppercase text-on-surface-variant">Status</span>
-                        <span className="font-bold text-primary">{bike.serviceStatus}</span>
+                        <span className="uppercase text-on-surface-variant">
+                          Status
+                        </span>
+                        <span className="font-bold text-primary">
+                          {bike.serviceStatus}
+                        </span>
                       </div>
                       <div className="flex justify-between border-b border-outline-variant pb-1">
-                        <span className="uppercase text-on-surface-variant">Items</span>
-                        <span className="font-bold text-primary">{bike.selectedServices.length}</span>
+                        <span className="uppercase text-on-surface-variant">
+                          Items
+                        </span>
+                        <span className="font-bold text-primary">
+                          {bike.selectedServices.length}
+                        </span>
                       </div>
                       <div className="flex justify-between border-b border-outline-variant pb-1">
-                        <span className="uppercase text-on-surface-variant">Total</span>
-                        <span className="font-bold text-primary">${bike.totalAmount.toFixed(2)}</span>
+                        <span className="uppercase text-on-surface-variant">
+                          Total
+                        </span>
+                        <span className="font-bold text-primary">
+                          ${bike.totalAmount.toFixed(2)}
+                        </span>
                       </div>
                       <div className="grid grid-cols-1 gap-2 border-b border-outline-variant pb-2 md:grid-cols-2">
                         <div className="flex justify-between gap-3">
-                          <span className="uppercase text-on-surface-variant">Booking Date</span>
-                          <span className="font-bold text-primary text-right">{bike.bookingDate || 'N/A'}</span>
+                          <span className="uppercase text-on-surface-variant">
+                            Booking Date
+                          </span>
+                          <span className="font-bold text-primary text-right">
+                            {bike.bookingDate || 'N/A'}
+                          </span>
                         </div>
                         <div className="flex justify-between gap-3">
-                          <span className="uppercase text-on-surface-variant">Booking Time</span>
-                          <span className="font-bold text-primary text-right">{bike.bookingTimeLabel}</span>
+                          <span className="uppercase text-on-surface-variant">
+                            Booking Time
+                          </span>
+                          <span className="font-bold text-primary text-right">
+                            {bike.bookingTimeLabel}
+                          </span>
                         </div>
                         <div className="flex justify-between gap-3">
-                          <span className="uppercase text-on-surface-variant">Brand</span>
-                          <span className="font-bold text-primary text-right">{bike.name}</span>
+                          <span className="uppercase text-on-surface-variant">
+                            Brand
+                          </span>
+                          <span className="font-bold text-primary text-right">
+                            {bike.name}
+                          </span>
                         </div>
                         <div className="flex justify-between gap-3">
-                          <span className="uppercase text-on-surface-variant">Model</span>
-                          <span className="font-bold text-primary text-right">{bike.model || 'N/A'}</span>
+                          <span className="uppercase text-on-surface-variant">
+                            Model
+                          </span>
+                          <span className="font-bold text-primary text-right">
+                            {bike.model || 'N/A'}
+                          </span>
                         </div>
                         <div className="flex justify-between gap-3">
-                          <span className="uppercase text-on-surface-variant">Plate Number</span>
-                          <span className="font-bold text-primary text-right">{bike.plateNumber || 'N/A'}</span>
+                          <span className="uppercase text-on-surface-variant">
+                            Plate Number
+                          </span>
+                          <span className="font-bold text-primary text-right">
+                            {bike.plateNumber || 'N/A'}
+                          </span>
                         </div>
                         <div className="flex justify-between gap-3">
-                          <span className="uppercase text-on-surface-variant">Engine Capacity</span>
-                          <span className="font-bold text-primary text-right">{bike.engineCapacity}</span>
+                          <span className="uppercase text-on-surface-variant">
+                            Engine Capacity
+                          </span>
+                          <span className="font-bold text-primary text-right">
+                            {bike.engineCapacity}
+                          </span>
                         </div>
                         <div className="flex justify-between gap-3">
-                          <span className="uppercase text-on-surface-variant">Customer</span>
-                          <span className="font-bold text-primary text-right">{bike.customerName}</span>
+                          <span className="uppercase text-on-surface-variant">
+                            Customer
+                          </span>
+                          <span className="font-bold text-primary text-right">
+                            {bike.customerName}
+                          </span>
                         </div>
                         <div className="flex justify-between gap-3">
-                          <span className="uppercase text-on-surface-variant">Email</span>
-                          <span className="font-bold text-primary text-right break-all">{bike.customerEmail}</span>
+                          <span className="uppercase text-on-surface-variant">
+                            Email
+                          </span>
+                          <span className="font-bold text-primary text-right break-all">
+                            {bike.customerEmail}
+                          </span>
                         </div>
                       </div>
                       {bike.selectedServices.length > 0 && (
                         <div className="pt-1">
-                          <span className="block uppercase text-on-surface-variant mb-2">Selected Services</span>
+                          <span className="block uppercase text-on-surface-variant mb-2">
+                            Selected Services
+                          </span>
                           <div className="space-y-2">
                             {bike.selectedServices.map((service) => (
                               <div
                                 key={service.id}
                                 className="flex items-center justify-between border-b border-outline-variant pb-1 last:border-b-0 last:pb-0"
                               >
-                                <span className="text-primary">{service.name}</span>
+                                <span className="text-primary">
+                                  {service.name}
+                                </span>
                                 <span className="font-bold text-primary">
                                   ${Number(service.price || 0).toFixed(2)}
                                 </span>
@@ -676,8 +795,12 @@ export default function GaragePage() {
                       )}
                       {bike.notes && (
                         <div className="pt-1">
-                          <span className="block uppercase text-on-surface-variant mb-1">Description</span>
-                          <span className="leading-relaxed text-primary">{bike.notes}</span>
+                          <span className="block uppercase text-on-surface-variant mb-1">
+                            Description
+                          </span>
+                          <span className="leading-relaxed text-primary">
+                            {bike.notes}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -688,7 +811,9 @@ export default function GaragePage() {
                       onClick={() => toggleSpecs(bike.id)}
                       className="flex-1 border border-primary py-3.5 text-[10px] font-bold uppercase tracking-widest text-primary transition-all hover:bg-primary hover:text-white active:scale-[0.98]"
                     >
-                      {expandedBikeId === bike.id ? 'Hide Breakdown' : 'View Breakdown'}
+                      {expandedBikeId === bike.id
+                        ? 'Hide Breakdown'
+                        : 'View Breakdown'}
                     </button>
                     {bike.canCancel ? (
                       <button

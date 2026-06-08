@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('plate_number')->nullable()->after('model');
             $table->string('engine_capacity')->nullable()->after('plate_number');
             $table->unsignedBigInteger('service_id')->nullable()->after('engine_capacity');
-            
+
             // Make existing fields nullable as they might not be sent from the new frontend flow
             $table->string('customer_name')->nullable()->change();
             $table->string('customer_email')->nullable()->change();
@@ -27,7 +27,7 @@ return new class extends Migration
     {
         Schema::table('bookings', function (Blueprint $table): void {
             $table->dropColumn(['bike_name', 'model', 'plate_number', 'engine_capacity', 'service_id']);
-            
+
             $table->string('customer_name')->nullable(false)->change();
             $table->string('customer_email')->nullable(false)->change();
             $table->dateTime('starts_at')->nullable(false)->change();

@@ -7,7 +7,6 @@ use App\Http\Resources\ServiceResource;
 use App\Models\Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ServicesController extends Controller
 {
@@ -23,36 +22,36 @@ class ServicesController extends Controller
             'maintenance' => [
                 'name' => 'Maintenance Services',
                 'icon' => 'build',
-                'subcategories' => []
+                'subcategories' => [],
             ],
             'washing' => [
                 'name' => 'Washing Services',
                 'icon' => 'wash',
-                'subcategories' => []
+                'subcategories' => [],
             ],
             'engine_checkup' => [
                 'name' => 'Engine Check Up',
                 'icon' => 'monitor_heart',
-                'subcategories' => []
+                'subcategories' => [],
             ],
             'tuning' => [
                 'name' => 'Tuning Performance',
                 'icon' => 'speed',
-                'subcategories' => []
+                'subcategories' => [],
             ],
         ];
 
         foreach ($services as $service) {
-            if (!isset($grouped[$service->main_category])) {
+            if (! isset($grouped[$service->main_category])) {
                 continue;
             }
 
             $subCat = $service->sub_category ?? '_root';
-            
-            if (!isset($grouped[$service->main_category]['subcategories'][$subCat])) {
+
+            if (! isset($grouped[$service->main_category]['subcategories'][$subCat])) {
                 $grouped[$service->main_category]['subcategories'][$subCat] = [
                     'name' => $service->sub_category ?? 'General',
-                    'items' => []
+                    'items' => [],
                 ];
             }
 

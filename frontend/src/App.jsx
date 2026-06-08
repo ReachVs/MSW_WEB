@@ -37,17 +37,17 @@ function App() {
   const handleLogout = () => {
     setIsAuthenticated(false)
     setCurrentView('landing')
-    localStorage.removeItem('authToken'); // Clear token on logout
+    localStorage.removeItem('authToken') // Clear token on logout
   }
 
   const handleBookServiceSubmit = async (bookingData) => {
     // This function now needs to make an API call to the backend
     // to create a new booking.
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('authToken')
     if (!token) {
-      console.error('Authentication token not found. Cannot submit booking.');
+      console.error('Authentication token not found. Cannot submit booking.')
       // Optionally, redirect to login or show an error toast
-      return;
+      return
     }
 
     try {
@@ -55,8 +55,8 @@ function App() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           service_name: bookingData.serviceType,
@@ -66,23 +66,23 @@ function App() {
           notes: bookingData.notes || bookingData.bikeName, // Use bikeName as notes for now
           // Add other fields as required by your StoreBookingRequest
         }),
-      });
+      })
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Booking submission failed:', errorData);
+        const errorData = await response.json()
+        console.error('Booking submission failed:', errorData)
         // Handle error (e.g., show toast)
-        return;
+        return
       }
 
-      const newBooking = await response.json();
-      console.log('Booking submitted successfully:', newBooking);
+      const newBooking = await response.json()
+      console.log('Booking submitted successfully:', newBooking)
 
-      setIsBookingOpen(false);
+      setIsBookingOpen(false)
       // Redirect to Service History to see the newly added log (or garage for active)
-      setCurrentView('history'); // Or 'garage' if you want to see it in active services
+      setCurrentView('history') // Or 'garage' if you want to see it in active services
     } catch (error) {
-      console.error('Network error during booking submission:', error);
+      console.error('Network error during booking submission:', error)
       // Handle network error
     }
   }

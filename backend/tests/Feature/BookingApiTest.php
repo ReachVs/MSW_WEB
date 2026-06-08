@@ -136,7 +136,7 @@ class BookingApiTest extends TestCase
             'status' => Booking::STATUS_PENDING,
         ]);
 
-        $response = $this->getJson('/api/calendar/available-slots?date=' . $date->toDateString());
+        $response = $this->getJson('/api/calendar/available-slots?date='.$date->toDateString());
 
         $response->assertOk()
             ->assertJsonPath('data.slots.0.time', '08:00')

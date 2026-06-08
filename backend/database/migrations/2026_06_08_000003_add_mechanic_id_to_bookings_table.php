@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Mechanic;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +17,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            $table->dropForeignIdFor(\App\Models\Mechanic::class);
+            $table->dropForeignIdFor(Mechanic::class);
             $table->dropColumn('mechanic_id');
         });
     }

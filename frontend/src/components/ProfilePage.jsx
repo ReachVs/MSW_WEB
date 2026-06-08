@@ -173,7 +173,6 @@ export default function ProfilePage({ onLogout, profile, onProfileSave }) {
                       {user.phone}
                     </p>
                   </div>
-
                 </>
               )}
             </div>

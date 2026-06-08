@@ -18,7 +18,7 @@ class UpdateBookingStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', 'string', 'in:' . implode(',', Booking::statuses())],
+            'status' => ['required', 'string', 'in:'.implode(',', Booking::statuses())],
         ];
     }
 }

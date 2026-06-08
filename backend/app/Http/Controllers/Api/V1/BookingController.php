@@ -8,6 +8,7 @@ use App\Http\Requests\StoreBookingRequest;
 use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 use App\Support\WorkshopCalendar;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -37,8 +38,8 @@ class BookingController extends Controller
         $data['customer_name'] = $data['customer_name'] ?? $request->user()->name;
         $data['customer_email'] = $data['customer_email'] ?? $request->user()->email;
         $data['starts_at'] = $data['starts_at'] ?? now();
-        $data['starts_at'] = \Carbon\Carbon::parse($data['starts_at'])->seconds(0);
-        $data['ends_at'] = $data['ends_at'] ?? \Carbon\Carbon::parse($data['starts_at'])->copy()->addHour();
+        $data['starts_at'] = Carbon::parse($data['starts_at'])->seconds(0);
+        $data['ends_at'] = $data['ends_at'] ?? Carbon::parse($data['starts_at'])->copy()->addHour();
         $data['selected_services'] = $data['selected_services'] ?? [];
 
         if ($data['starts_at']->lt(now())) {
@@ -132,15 +133,15 @@ class BookingController extends Controller
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
         $vehicles = $user->bookings()
-                         ->whereNotNull('notes')
-                         ->select('notes')
-                         ->distinct()
-                         ->pluck('notes');
+            ->whereNotNull('notes')
+            ->select('notes')
+            ->distinct()
+            ->pluck('notes');
 
         return response()->json(['data' => $vehicles]);
     }

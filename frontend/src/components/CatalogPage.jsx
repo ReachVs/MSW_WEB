@@ -1,31 +1,34 @@
 import { useState, useEffect } from 'react'
 import BookingScheduleModal from './BookingScheduleModal'
-import { getProfileDisplayName, getStoredProfile } from '../utils/profileStorage'
+import {
+  getProfileDisplayName,
+  getStoredProfile,
+} from '../utils/profileStorage'
 
 // Icons mapping using Material Symbols
 const iconMap = {
-  'build': 'build',
-  'wash': 'wash',
-  'monitor_heart': 'monitor_heart',
-  'speed': 'speed',
-  'opacity': 'opacity',
-  'slow_motion_video': 'slow_motion_video',
-  'settings': 'settings',
-  'airline_seat_recline_normal': 'airline_seat_recline_normal',
-  'tire_repair': 'tire_repair',
-  'settings_input_component': 'settings_input_component',
-  'battery_charging_full': 'battery_charging_full',
-  'light_mode': 'light_mode',
-  'electric_bolt': 'electric_bolt',
-  'handyman': 'handyman',
-  'verified': 'verified',
-  'bolt': 'bolt',
-  'flash_on': 'flash_on',
-  'air': 'air',
-  'ev_station': 'ev_station',
-  'favorite': 'favorite',
-  'shield': 'shield',
-  'check_circle': 'check_circle',
+  build: 'build',
+  wash: 'wash',
+  monitor_heart: 'monitor_heart',
+  speed: 'speed',
+  opacity: 'opacity',
+  slow_motion_video: 'slow_motion_video',
+  settings: 'settings',
+  airline_seat_recline_normal: 'airline_seat_recline_normal',
+  tire_repair: 'tire_repair',
+  settings_input_component: 'settings_input_component',
+  battery_charging_full: 'battery_charging_full',
+  light_mode: 'light_mode',
+  electric_bolt: 'electric_bolt',
+  handyman: 'handyman',
+  verified: 'verified',
+  bolt: 'bolt',
+  flash_on: 'flash_on',
+  air: 'air',
+  ev_station: 'ev_station',
+  favorite: 'favorite',
+  shield: 'shield',
+  check_circle: 'check_circle',
 }
 
 function getIcon(iconName, className = 'text-primary') {
@@ -79,16 +82,16 @@ export default function CatalogPage({ onBook }) {
 
   const toggleSubCategory = (mainKey, subKey) => {
     const key = `${mainKey}-${subKey}`
-    setExpandedSub(prev => (prev[key] ? {} : { [key]: true }))
+    setExpandedSub((prev) => (prev[key] ? {} : { [key]: true }))
   }
 
   const toggleService = (service) => {
     if (service.selection_mode === 0) return // Can't select headers
-    
-    setSelectedServices(prev => {
-      const exists = prev.find(s => s.id === service.id)
+
+    setSelectedServices((prev) => {
+      const exists = prev.find((s) => s.id === service.id)
       if (exists) {
-        return prev.filter(s => s.id !== service.id)
+        return prev.filter((s) => s.id !== service.id)
       } else {
         return [...prev, service]
       }
@@ -96,15 +99,20 @@ export default function CatalogPage({ onBook }) {
   }
 
   const isServiceSelected = (serviceId) => {
-    return selectedServices.find(s => s.id === serviceId)
+    return selectedServices.find((s) => s.id === serviceId)
   }
 
   const removeSelectedService = (serviceId) => {
-    setSelectedServices((prev) => prev.filter((service) => service.id !== serviceId))
+    setSelectedServices((prev) =>
+      prev.filter((service) => service.id !== serviceId),
+    )
   }
 
   const calculateTotal = () => {
-    return selectedServices.reduce((sum, s) => sum + (parseFloat(s.price) || 0), 0)
+    return selectedServices.reduce(
+      (sum, s) => sum + (parseFloat(s.price) || 0),
+      0,
+    )
   }
 
   const handleConfirmServices = () => {
@@ -121,7 +129,11 @@ export default function CatalogPage({ onBook }) {
   }
 
   const handleOpenSchedule = () => {
-    if (!bikeInfo.name.trim() || !bikeInfo.model.trim() || !bikeInfo.plateNumber.trim()) {
+    if (
+      !bikeInfo.name.trim() ||
+      !bikeInfo.model.trim() ||
+      !bikeInfo.plateNumber.trim()
+    ) {
       alert('Please fill in all bike information')
       return
     }
@@ -148,8 +160,8 @@ export default function CatalogPage({ onBook }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           customer_name: getProfileDisplayName(profile),
@@ -159,8 +171,8 @@ export default function CatalogPage({ onBook }) {
           plate_number: bikeInfo.plateNumber,
           engine_capacity: bikeInfo.engineCapacity,
           starts_at: scheduleInfo.startsAt,
-          service_name: selectedServices.map(s => s.name).join(', '),
-          selected_services: selectedServices.map(s => ({
+          service_name: selectedServices.map((s) => s.name).join(', '),
+          selected_services: selectedServices.map((s) => ({
             id: s.id,
             name: s.name,
             price: parseFloat(s.price) || 0,
@@ -169,7 +181,7 @@ export default function CatalogPage({ onBook }) {
           status: 'pending',
           notes:
             scheduleInfo.notes?.trim() ||
-            `Services: ${selectedServices.map(s => s.name).join(', ')}`,
+            `Services: ${selectedServices.map((s) => s.name).join(', ')}`,
         }),
       })
 
@@ -178,7 +190,7 @@ export default function CatalogPage({ onBook }) {
       }
 
       const result = await response.json()
-      
+
       // Reset state
       setShowSummary(false)
       setShowBikeForm(false)
@@ -229,21 +241,30 @@ export default function CatalogPage({ onBook }) {
           <h1 className="font-display-xl text-4xl text-primary mb-xs uppercase tracking-tighter">
             Service Summary
           </h1>
-          <p className="text-on-surface-variant font-body-sm">Review your selected services</p>
+          <p className="text-on-surface-variant font-body-sm">
+            Review your selected services
+          </p>
         </div>
 
         <div className="bg-white border border-outline-variant p-lg mb-lg">
-          <h2 className="font-label-sm text-xs uppercase text-outline mb-md">Selected Services</h2>
+          <h2 className="font-label-sm text-xs uppercase text-outline mb-md">
+            Selected Services
+          </h2>
           <div className="space-y-md mb-lg">
-            {selectedServices.map(service => (
-              <div key={service.id} className="flex justify-between items-start border-b border-outline-variant pb-md last:border-b-0">
+            {selectedServices.map((service) => (
+              <div
+                key={service.id}
+                className="flex justify-between items-start border-b border-outline-variant pb-md last:border-b-0"
+              >
                 <div>
                   <p className="font-bold text-sm uppercase">{service.name}</p>
                   <p className="text-xs text-outline">{service.description}</p>
                 </div>
                 <div className="flex items-start gap-sm">
                   <span className="mono-data text-secondary font-bold">
-                    {service.price > 0 ? `$${parseFloat(service.price).toFixed(2)}` : 'FREE'}
+                    {service.price > 0
+                      ? `$${parseFloat(service.price).toFixed(2)}`
+                      : 'FREE'}
                   </span>
                   <button
                     type="button"
@@ -298,7 +319,9 @@ export default function CatalogPage({ onBook }) {
           <h1 className="font-display-xl text-4xl text-primary mb-xs uppercase tracking-tighter">
             Bike Information
           </h1>
-          <p className="text-on-surface-variant font-body-sm">Enter your motorcycle details</p>
+          <p className="text-on-surface-variant font-body-sm">
+            Enter your motorcycle details
+          </p>
         </div>
 
         <div className="bg-white border border-outline-variant p-lg">
@@ -310,7 +333,9 @@ export default function CatalogPage({ onBook }) {
               <input
                 type="text"
                 value={bikeInfo.name}
-                onChange={(e) => setBikeInfo({ ...bikeInfo, name: e.target.value })}
+                onChange={(e) =>
+                  setBikeInfo({ ...bikeInfo, name: e.target.value })
+                }
                 className="w-full border border-outline-variant px-md py-3 font-body-md text-sm focus:outline-none focus:border-secondary transition-colors"
                 placeholder="e.g., DUCATI"
               />
@@ -322,7 +347,9 @@ export default function CatalogPage({ onBook }) {
               <input
                 type="text"
                 value={bikeInfo.model}
-                onChange={(e) => setBikeInfo({ ...bikeInfo, model: e.target.value })}
+                onChange={(e) =>
+                  setBikeInfo({ ...bikeInfo, model: e.target.value })
+                }
                 className="w-full border border-outline-variant px-md py-3 font-body-md text-sm focus:outline-none focus:border-secondary transition-colors"
                 placeholder="e.g., PANIGALE V4 S"
               />
@@ -336,7 +363,9 @@ export default function CatalogPage({ onBook }) {
             <input
               type="text"
               value={bikeInfo.plateNumber}
-              onChange={(e) => setBikeInfo({ ...bikeInfo, plateNumber: e.target.value })}
+              onChange={(e) =>
+                setBikeInfo({ ...bikeInfo, plateNumber: e.target.value })
+              }
               className="w-full border border-outline-variant px-md py-3 font-mono text-sm focus:outline-none focus:border-secondary transition-colors"
               placeholder="e.g., 1A-1234"
             />
@@ -349,7 +378,9 @@ export default function CatalogPage({ onBook }) {
             <input
               type="text"
               value={bikeInfo.engineCapacity}
-              onChange={(e) => setBikeInfo({ ...bikeInfo, engineCapacity: e.target.value })}
+              onChange={(e) =>
+                setBikeInfo({ ...bikeInfo, engineCapacity: e.target.value })
+              }
               className="w-full border border-outline-variant px-md py-3 font-body-md text-sm focus:outline-none focus:border-secondary transition-colors"
               placeholder="e.g., 1100"
             />
@@ -470,10 +501,14 @@ export default function CatalogPage({ onBook }) {
                 <div className="text-4xl mb-md">
                   {getIcon(cat.icon, isActive ? 'text-white' : 'text-primary')}
                 </div>
-                <h3 className={`font-headline-md text-xl font-bold uppercase ${isActive ? 'text-white' : 'text-primary'}`}>
+                <h3
+                  className={`font-headline-md text-xl font-bold uppercase ${isActive ? 'text-white' : 'text-primary'}`}
+                >
                   {cat.name}
                 </h3>
-                <p className={`text-xs mt-1 ${isActive ? 'text-white/80' : 'text-outline'}`}>
+                <p
+                  className={`text-xs mt-1 ${isActive ? 'text-white/80' : 'text-outline'}`}
+                >
                   {catalogData[cat.key]?.subcategories
                     ? Object.keys(catalogData[cat.key].subcategories).length
                     : 0}{' '}
@@ -501,11 +536,16 @@ export default function CatalogPage({ onBook }) {
 
             <div className="flex flex-col gap-lg">
               {Object.entries(catalogData[expandedMain].subcategories || {})
-                .filter(([subKey, subData]) => subKey !== '_root' && subKey !== 'General') // Filter out root/general subcategories
+                .filter(
+                  ([subKey, subData]) =>
+                    subKey !== '_root' && subKey !== 'General',
+                ) // Filter out root/general subcategories
                 .map(([subKey, subData]) => {
                   const isExpanded = expandedSub[`${expandedMain}-${subKey}`]
-                  const selectableItems = subData.items.filter(item => item.selection_mode === 1)
-                  
+                  const selectableItems = subData.items.filter(
+                    (item) => item.selection_mode === 1,
+                  )
+
                   // Skip subcategories with no selectable items
                   if (selectableItems.length === 0) return null
 
@@ -522,13 +562,20 @@ export default function CatalogPage({ onBook }) {
                           <span className="material-symbols-outlined text-secondary text-2xl">
                             {selectableItems[0]?.icon || 'expand_more'}
                           </span>
-                          <span className="font-bold uppercase">{subData.name}</span>
+                          <span className="font-bold uppercase">
+                            {subData.name}
+                          </span>
                         </div>
                         <div className="flex items-center gap-md">
                           <span className="mono-data text-xs text-outline">
                             {selectableItems.length} options
                           </span>
-                          <span className="material-symbols-outlined text-outline transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none' }}>
+                          <span
+                            className="material-symbols-outlined text-outline transition-transform"
+                            style={{
+                              transform: isExpanded ? 'rotate(180deg)' : 'none',
+                            }}
+                          >
                             expand_more
                           </span>
                         </div>
@@ -536,7 +583,7 @@ export default function CatalogPage({ onBook }) {
 
                       {isExpanded && (
                         <div className="border-t border-outline-variant p-md space-y-sm">
-                          {selectableItems.map(item => (
+                          {selectableItems.map((item) => (
                             <label
                               key={item.id}
                               className={`flex items-start gap-md p-sm border border-outline-variant cursor-pointer transition-colors ${
@@ -557,10 +604,14 @@ export default function CatalogPage({ onBook }) {
                                     {item.name}
                                   </p>
                                   <span className="mono-data text-secondary font-bold ml-2">
-                                    {item.price > 0 ? `$${parseFloat(item.price).toFixed(2)}` : 'FREE'}
+                                    {item.price > 0
+                                      ? `$${parseFloat(item.price).toFixed(2)}`
+                                      : 'FREE'}
                                   </span>
                                 </div>
-                                <p className="text-xs text-outline mt-1">{item.description}</p>
+                                <p className="text-xs text-outline mt-1">
+                                  {item.description}
+                                </p>
                               </div>
                             </label>
                           ))}
@@ -575,7 +626,9 @@ export default function CatalogPage({ onBook }) {
 
         {!expandedMain && (
           <div className="text-center py-xl text-outline">
-            <p className="font-body-md">Select a category above to view available services</p>
+            <p className="font-body-md">
+              Select a category above to view available services
+            </p>
           </div>
         )}
       </div>

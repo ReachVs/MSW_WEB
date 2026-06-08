@@ -14,11 +14,17 @@ class Booking extends Model
     use HasFactory;
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_CONFIRMED = 'confirmed';
+
     public const STATUS_REPAIR = 'repair';
+
     public const STATUS_WAITING_PART = 'waiting_part';
+
     public const STATUS_READY_PICKUP = 'ready_pickup';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     public const ACTIVE_STATUSES = [

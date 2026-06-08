@@ -47,7 +47,7 @@ class AdminBookingController extends Controller
             ->whereIn('id', $validated['service_ids'])
             ->orderBy('name')
             ->get();
-        $startsAt = Carbon::parse($validated['booking_date'] . ' ' . $validated['booking_time'])->seconds(0);
+        $startsAt = Carbon::parse($validated['booking_date'].' '.$validated['booking_time'])->seconds(0);
 
         if ($startsAt->lt(now())) {
             return back()->withInput()->withErrors([
@@ -81,7 +81,7 @@ class AdminBookingController extends Controller
             'plate_number' => $validated['plate_number'],
             'engine_capacity' => $validated['engine_capacity'] ?? null,
             'customer_name' => $validated['customer_name'],
-            'customer_email' => $validated['customer_email'] ?: ('walkin-' . now()->timestamp . '@walkin.local'),
+            'customer_email' => $validated['customer_email'] ?: ('walkin-'.now()->timestamp.'@walkin.local'),
             'starts_at' => $startsAt,
             'ends_at' => $startsAt->copy()->addHour(),
             'status' => $validated['status'],

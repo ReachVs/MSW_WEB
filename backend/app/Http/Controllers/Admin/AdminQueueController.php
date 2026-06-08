@@ -16,8 +16,8 @@ class AdminQueueController extends Controller
             ->get();
 
         $pendingJobs = Booking::whereIn('status', [
-                Booking::STATUS_PENDING,
-            ])
+            Booking::STATUS_PENDING,
+        ])
             ->with('mechanic')
             ->orderBy('starts_at')
             ->get();

@@ -22,7 +22,7 @@ class BookingManagementController extends Controller
                 $query->where('status', $request->string('status'));
             })
             ->when($request->filled('search'), function ($query) use ($request): void {
-                $search = '%' . $request->string('search') . '%';
+                $search = '%'.$request->string('search').'%';
 
                 $query->where(function ($nestedQuery) use ($search): void {
                     $nestedQuery

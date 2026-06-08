@@ -28,7 +28,7 @@ class AdminStoreBookingRequest extends FormRequest
             'service_ids.*' => ['integer', 'exists:services,id'],
             'booking_date' => ['required', 'date'],
             'booking_time' => ['required', 'date_format:H:i'],
-            'status' => ['required', 'string', 'in:' . implode(',', [
+            'status' => ['required', 'string', 'in:'.implode(',', [
                 Booking::STATUS_PENDING,
                 Booking::STATUS_CONFIRMED,
                 Booking::STATUS_REPAIR,

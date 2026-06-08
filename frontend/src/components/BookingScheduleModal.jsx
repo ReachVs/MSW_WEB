@@ -51,7 +51,9 @@ export default function BookingScheduleModal({
   selectedServices,
   totalAmount,
 }) {
-  const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()))
+  const [currentMonth, setCurrentMonth] = useState(() =>
+    startOfMonth(new Date()),
+  )
   const [selectedDate, setSelectedDate] = useState(() => new Date())
   const [monthAvailability, setMonthAvailability] = useState({})
   const [slots, setSlots] = useState([])
@@ -93,7 +95,9 @@ export default function BookingScheduleModal({
       setLoadingMonth(true)
       try {
         const month = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`
-        const response = await fetch(`http://localhost:8080/api/calendar/month?month=${month}-01`)
+        const response = await fetch(
+          `http://localhost:8080/api/calendar/month?month=${month}-01`,
+        )
         if (!response.ok) {
           throw new Error(`Failed to load calendar: ${response.statusText}`)
         }
@@ -167,7 +171,8 @@ export default function BookingScheduleModal({
                 Select Date & Time
               </h2>
               <p className="mt-1 text-sm text-on-surface-variant">
-                Choose an available workshop slot for {bikeInfo?.name} {bikeInfo?.model}
+                Choose an available workshop slot for {bikeInfo?.name}{' '}
+                {bikeInfo?.model}
               </p>
             </div>
             <div className="w-full border border-outline-variant bg-white p-md lg:w-[280px]">
@@ -191,7 +196,11 @@ export default function BookingScheduleModal({
                 type="button"
                 onClick={() =>
                   setCurrentMonth(
-                    new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1),
+                    new Date(
+                      currentMonth.getFullYear(),
+                      currentMonth.getMonth() - 1,
+                      1,
+                    ),
                   )
                 }
                 className="border border-outline-variant px-sm py-xs font-label-sm uppercase tracking-widest hover:bg-surface-container-low"
@@ -208,7 +217,11 @@ export default function BookingScheduleModal({
                 type="button"
                 onClick={() =>
                   setCurrentMonth(
-                    new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1),
+                    new Date(
+                      currentMonth.getFullYear(),
+                      currentMonth.getMonth() + 1,
+                      1,
+                    ),
                   )
                 }
                 className="border border-outline-variant px-sm py-xs font-label-sm uppercase tracking-widest hover:bg-surface-container-low"
@@ -233,7 +246,8 @@ export default function BookingScheduleModal({
                 const isFull = !!dayData?.is_full
                 const isDisabled = isPast || isFull
                 const isSelected = selectedDate && isSameDay(date, selectedDate)
-                const isCurrentMonth = date.getMonth() === currentMonth.getMonth()
+                const isCurrentMonth =
+                  date.getMonth() === currentMonth.getMonth()
 
                 return (
                   <button
@@ -253,7 +267,9 @@ export default function BookingScheduleModal({
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-primary">{date.getDate()}</span>
+                      <span className="font-bold text-primary">
+                        {date.getDate()}
+                      </span>
                       {(dayData?.booking_count || 0) > 0 && (
                         <span className="text-[10px] font-label-sm uppercase tracking-widest text-secondary">
                           {dayData.booking_count}
@@ -270,7 +286,9 @@ export default function BookingScheduleModal({
               })}
             </div>
             {loadingMonth && (
-              <p className="mt-md text-sm text-outline">Loading month availability...</p>
+              <p className="mt-md text-sm text-outline">
+                Loading month availability...
+              </p>
             )}
           </div>
 
@@ -304,7 +322,9 @@ export default function BookingScheduleModal({
                         : 'border-outline-variant bg-white hover:bg-surface-container-low'
                     } ${!slot.is_available ? 'cursor-not-allowed opacity-40' : ''}`}
                   >
-                    <p className="font-bold uppercase text-primary">{slot.label}</p>
+                    <p className="font-bold uppercase text-primary">
+                      {slot.label}
+                    </p>
                     <p className="text-[10px] uppercase tracking-widest text-outline">
                       {slot.remaining_capacity} left
                     </p>
@@ -312,10 +332,14 @@ export default function BookingScheduleModal({
                 ))}
               </div>
               {loadingSlots && (
-                <p className="mt-sm text-sm text-outline">Loading time slots...</p>
+                <p className="mt-sm text-sm text-outline">
+                  Loading time slots...
+                </p>
               )}
               {!loadingSlots && slots.length === 0 && (
-                <p className="mt-sm text-sm text-error">No available slots for this day.</p>
+                <p className="mt-sm text-sm text-error">
+                  No available slots for this day.
+                </p>
               )}
             </div>
 

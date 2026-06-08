@@ -34,12 +34,15 @@ export default function ServiceHistoryPage() {
       }
 
       try {
-        const response = await fetch('http://localhost:8080/api/bookings/history', {
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
+        const response = await fetch(
+          'http://localhost:8080/api/bookings/history',
+          {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
           },
-        })
+        )
 
         if (!response.ok) {
           if (response.status === 401) {
@@ -55,13 +58,17 @@ export default function ServiceHistoryPage() {
 
         const mappedLogs = data.data.map((booking) => ({
           id: booking.id,
-          date: new Date(booking.ends_at || booking.updated_at).toLocaleDateString('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-          }).toUpperCase(),
+          date: new Date(booking.ends_at || booking.updated_at)
+            .toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+            })
+            .toUpperCase(),
           sortDate: booking.updated_at || booking.ends_at,
-          unit: booking.bike_name ? `${booking.bike_name} ${booking.model}` : (booking.notes || booking.service_name),
+          unit: booking.bike_name
+            ? `${booking.bike_name} ${booking.model}`
+            : booking.notes || booking.service_name,
           plateNumber: booking.plate_number || 'N/A',
           serviceType: booking.service_name,
           fee: '$' + Number(booking.total_amount || 0).toFixed(2),
@@ -85,13 +92,13 @@ export default function ServiceHistoryPage() {
   const detailsDatabase = {
     // These are placeholders, actual data should come from backend if available
     // For now, we'll use log.notes and log.mechanic for diagnostics and technician
-    'default': {
+    default: {
       checklist: [
         'General diagnostic scans completed',
         'Standard multipoint safety inspection',
       ],
       partsReplaced: 'Standard consumables',
-    }
+    },
   }
 
   const toggleExpand = (id) => {
@@ -107,7 +114,7 @@ export default function ServiceHistoryPage() {
     }
 
     const confirmed = window.confirm(
-      'Remove this archived service record from your history?'
+      'Remove this archived service record from your history?',
     )
 
     if (!confirmed) {
@@ -119,25 +126,28 @@ export default function ServiceHistoryPage() {
     setError(null)
 
     try {
-      const response = await fetch(`http://localhost:8080/api/bookings/${logId}`, {
-        method: 'DELETE',
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `http://localhost:8080/api/bookings/${logId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
         },
-      })
+      )
 
       const data = await response.json().catch(() => ({}))
 
       if (!response.ok) {
         throw new Error(
-          data.message || 'Failed to remove the selected archive record.'
+          data.message || 'Failed to remove the selected archive record.',
         )
       }
 
       setLogs((prevLogs) => prevLogs.filter((log) => log.id !== logId))
       setExpandedLog((prevExpanded) =>
-        prevExpanded === logId ? null : prevExpanded
+        prevExpanded === logId ? null : prevExpanded,
       )
       setActionMessage(data.message || 'Service archive record removed.')
     } catch (err) {
@@ -278,7 +288,6 @@ export default function ServiceHistoryPage() {
               />
             </div>
           </div>
-
         </div>
 
         {/* Results Summary */}
@@ -380,7 +389,9 @@ export default function ServiceHistoryPage() {
                                   disabled={deletingId === log.id}
                                   className="font-label-sm text-xs text-red-600 hover:text-red-700 transition-colors uppercase font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                  {deletingId === log.id ? 'Removing...' : 'Remove'}
+                                  {deletingId === log.id
+                                    ? 'Removing...'
+                                    : 'Remove'}
                                 </button>
                               </div>
                             </td>

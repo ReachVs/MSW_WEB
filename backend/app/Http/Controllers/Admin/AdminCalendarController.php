@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\Mechanic;
 use App\Models\WorkshopSetting;
 use App\Support\WorkshopCalendar;
 use Carbon\Carbon;
@@ -19,7 +20,10 @@ class AdminCalendarController extends Controller
         $selectedDate = Carbon::parse($request->query('date', now()->toDateString()))->startOfDay();
         $selectedView = $request->query('view', 'month');
         $settings = WorkshopCalendar::settings();
-        $monthDays = WorkshopCalendar::monthAvailability($selectedMonth);
+        $monthDays = WorkshopCalendar::monthAvailability($selectedMonth, true);
+        $mechanics = Mechanic::query()
+            ->orderBy('name')
+            ->get();
         $dayBookings = Booking::query()
             ->whereDate('starts_at', $selectedDate->toDateString())
             ->with(['mechanic', 'user'])
@@ -58,6 +62,7 @@ class AdminCalendarController extends Controller
             'weekDays',
             'dayBookings',
             'statistics',
+            'mechanics',
         ));
     }
 

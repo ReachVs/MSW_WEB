@@ -31,14 +31,6 @@ const iconMap = {
   check_circle: 'check_circle',
 }
 
-function getIcon(iconName, className = 'text-primary') {
-  return (
-    <span className={`material-symbols-outlined text-4xl ${className}`}>
-      {iconMap[iconName] || 'list_alt'}
-    </span>
-  )
-}
-
 export default function CatalogPage({ onBook }) {
   const [catalogData, setCatalogData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -93,7 +85,16 @@ export default function CatalogPage({ onBook }) {
       if (exists) {
         return prev.filter((s) => s.id !== service.id)
       } else {
-        return [...prev, service]
+        let filtered = prev
+        if (expandedMain === 'washing') {
+          filtered = prev.filter((s) => s.category !== 'washing')
+        }
+
+        const serviceWithCategory = {
+          ...service,
+          category: expandedMain,
+        }
+        return [...filtered, serviceWithCategory]
       }
     })
   }
@@ -415,10 +416,38 @@ export default function CatalogPage({ onBook }) {
 
   // Main Catalog View
   const mainCategories = [
-    { key: 'maintenance', name: 'Maintenance Services', icon: 'build' },
-    { key: 'washing', name: 'Washing Services', icon: 'wash' },
-    { key: 'engine_checkup', name: 'Engine Check Up', icon: 'monitor_heart' },
-    { key: 'tuning', name: 'Tuning Performance', icon: 'speed' },
+    {
+      key: 'maintenance',
+      name: 'Maintenance Services',
+      icon: 'build',
+      image: '/mechanic-chain.png',
+      description:
+        'Chains, fluids, brakes, and safety inspection. Keep your machine operating within factory safety tolerances.',
+    },
+    {
+      key: 'washing',
+      name: 'Washing Services',
+      icon: 'wash',
+      image: '/motorcycle-wash.png',
+      description:
+        'Full exterior detail, foam wash, tire cleaning, and protective treatments to keep surfaces pristine.',
+    },
+    {
+      key: 'engine_checkup',
+      name: 'Engine Check Up',
+      icon: 'monitor_heart',
+      image: '/mechanic-diagnostic.png',
+      description:
+        'Diagnostics, compression tests, spark plugs, and injector analysis for peak engine health.',
+    },
+    {
+      key: 'tuning',
+      name: 'Tuning Performance',
+      icon: 'speed',
+      image: '/dyno-tuning.jpg',
+      description:
+        'Dyno analysis, ECU optimization, remaps, and speed calibrations for performance racing.',
+    },
   ]
 
   return (
@@ -493,28 +522,62 @@ export default function CatalogPage({ onBook }) {
               <button
                 key={cat.key}
                 onClick={() => toggleMainCategory(cat.key)}
-                className={`border-2 p-lg text-left transition-all ${
+                className={`group flex flex-col text-left border-2 transition-all duration-300 w-full overflow-hidden ${
                   isActive
                     ? 'border-primary bg-primary-container'
                     : 'border-outline-variant hover:border-secondary bg-white'
                 }`}
               >
-                <div className="text-4xl mb-md">
-                  {getIcon(cat.icon, isActive ? 'text-white' : 'text-primary')}
+                {/* Card Visual Header Image */}
+                <div className="relative aspect-video w-full overflow-hidden bg-surface-container-low border-b border-outline-variant">
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  {/* Category Indicator Icon Overlay */}
+                  <div className="absolute bottom-3 right-3 bg-white p-2 border border-outline-variant shadow-sm flex items-center justify-center">
+                    <span className="material-symbols-outlined text-secondary text-2xl">
+                      {iconMap[cat.icon] || 'list_alt'}
+                    </span>
+                  </div>
                 </div>
-                <h3
-                  className={`font-headline-md text-xl font-bold uppercase ${isActive ? 'text-white' : 'text-primary'}`}
-                >
-                  {cat.name}
-                </h3>
-                <p
-                  className={`text-xs mt-1 ${isActive ? 'text-white/80' : 'text-outline'}`}
-                >
-                  {catalogData[cat.key]?.subcategories
-                    ? Object.keys(catalogData[cat.key].subcategories).length
-                    : 0}{' '}
-                  categories
-                </p>
+
+                {/* Card Info Content */}
+                <div className="flex-grow p-sm flex flex-col gap-sm">
+                  <div>
+                    <h3
+                      className={`font-headline-lg text-lg font-black uppercase tracking-tight ${
+                        isActive ? 'text-white' : 'text-primary'
+                      }`}
+                    >
+                      {cat.name}
+                    </h3>
+                    <p
+                      className={`text-xs mt-1 leading-relaxed ${
+                        isActive ? 'text-white/80' : 'text-on-surface-variant'
+                      }`}
+                    >
+                      {cat.description}
+                    </p>
+                  </div>
+
+                  <div className="mt-auto pt-sm border-t border-outline-variant/30 flex justify-between items-center w-full">
+                    <span
+                      className={`font-mono text-[10px] font-bold uppercase tracking-wider ${
+                        isActive ? 'text-white/70' : 'text-outline'
+                      }`}
+                    >
+                      {catalogData[cat.key]?.subcategories
+                        ? Object.keys(catalogData[cat.key].subcategories).length
+                        : 0}{' '}
+                      subcategories
+                    </span>
+                    <span className="material-symbols-outlined text-secondary text-sm group-hover:translate-x-1 transition-transform">
+                      arrow_right_alt
+                    </span>
+                  </div>
+                </div>
               </button>
             )
           })}
@@ -538,7 +601,10 @@ export default function CatalogPage({ onBook }) {
             <div className="flex flex-col gap-lg">
               {Object.entries(catalogData[expandedMain].subcategories || {})
                 .filter(
-                  ([subKey]) => subKey !== '_root' && subKey !== 'General',
+                  ([subKey]) =>
+                    subKey !== '_root' &&
+                    subKey !== 'General' &&
+                    subKey !== 'General Maintenance',
                 ) // Filter out root/general subcategories
                 .map(([subKey, subData]) => {
                   const isExpanded = expandedSub[`${expandedMain}-${subKey}`]
@@ -549,6 +615,114 @@ export default function CatalogPage({ onBook }) {
                   // Skip subcategories with no selectable items
                   if (selectableItems.length === 0) return null
 
+                  const isWashing = expandedMain === 'washing'
+                  const headerItem =
+                    subData.items.find((item) => item.selection_mode === 0) ||
+                    subData.items[0]
+                  const packagePrice = subData.items
+                    .filter((item) => item.selection_mode === 1)
+                    .reduce(
+                      (sum, item) => sum + (parseFloat(item.price) || 0),
+                      0,
+                    )
+
+                  const packageService = {
+                    id: headerItem.id,
+                    name: subData.name,
+                    price: packagePrice,
+                    description: headerItem.description || subData.name,
+                    selection_mode: 1,
+                  }
+
+                  if (isWashing) {
+                    return (
+                      <div
+                        key={subKey}
+                        className={`w-full overflow-hidden border transition-colors ${
+                          isServiceSelected(headerItem.id)
+                            ? 'border-secondary bg-secondary/[0.06]'
+                            : 'border-outline-variant bg-white hover:border-secondary'
+                        }`}
+                      >
+                        <div className="w-full p-md flex items-center justify-between">
+                          <div className="flex items-center gap-md">
+                            <input
+                              type="checkbox"
+                              id={`checkbox-${headerItem.id}`}
+                              checked={!!isServiceSelected(headerItem.id)}
+                              onChange={() => toggleService(packageService)}
+                              className="w-5 h-5 text-secondary border-outline-variant cursor-pointer"
+                            />
+                            <label
+                              htmlFor={`checkbox-${headerItem.id}`}
+                              className="font-bold uppercase cursor-pointer text-primary"
+                            >
+                              {subData.name}
+                            </label>
+                          </div>
+
+                          <div className="flex items-center gap-md">
+                            <span className="mono-data text-secondary font-bold">
+                              ${packagePrice.toFixed(2)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                toggleSubCategory(expandedMain, subKey)
+                              }
+                              className="flex items-center justify-center p-xs hover:bg-surface-container-high transition-colors"
+                            >
+                              <span className="font-label-sm text-[10px] uppercase text-outline mr-xs tracking-wider">
+                                {isExpanded ? 'Hide Details' : 'Show Details'}
+                              </span>
+                              <span
+                                className="material-symbols-outlined text-outline transition-transform"
+                                style={{
+                                  transform: isExpanded
+                                    ? 'rotate(180deg)'
+                                    : 'none',
+                                }}
+                              >
+                                expand_more
+                              </span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {isExpanded && (
+                          <div className="border-t border-outline-variant p-md bg-surface-container-low/50 space-y-md">
+                            <div>
+                              <p className="font-label-sm text-[9px] uppercase tracking-widest text-outline mb-sm font-bold">
+                                Included Package Services:
+                              </p>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-sm">
+                                {selectableItems.map((item) => (
+                                  <div
+                                    key={item.id}
+                                    className="flex items-start gap-2"
+                                  >
+                                    <span className="material-symbols-outlined text-green-600 text-sm mt-0.5 select-none">
+                                      check_circle
+                                    </span>
+                                    <div>
+                                      <p className="text-xs font-bold uppercase text-primary">
+                                        {item.name}
+                                      </p>
+                                      <p className="text-[10px] text-on-surface-variant">
+                                        {item.description}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  }
+
+                  // Non-washing categories remain with their original rendering
                   return (
                     <div
                       key={subKey}

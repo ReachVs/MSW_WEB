@@ -24,6 +24,7 @@ class AdminStoreBookingRequest extends FormRequest
             'model' => ['required', 'string', 'max:255'],
             'plate_number' => ['required', 'string', 'max:255'],
             'engine_capacity' => ['nullable', 'string', 'max:255'],
+            'mechanic_id' => ['nullable', 'integer', 'exists:mechanics,id'],
             'service_ids' => ['required', 'array', 'min:1'],
             'service_ids.*' => ['integer', 'exists:services,id'],
             'booking_date' => ['required', 'date'],

@@ -10,8 +10,91 @@ import {
 } from '../utils/profileStorage'
 
 const GARAGE_STORAGE_KEY = 'msw-garage-bookings'
-const DEFAULT_BIKE_IMAGE =
-  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&h=700&fit=crop'
+const DEFAULT_BIKE_IMAGE = '/mechanic-chain.png'
+
+const SERVICE_IMAGES = {
+  maintenance: '/mechanic-chain.png',
+  washing: '/motorcycle-wash.png',
+  engine_checkup: '/mechanic-diagnostic.png',
+  tuning: '/dyno-tuning.jpg',
+}
+
+const CATEGORY_DETAILS = {
+  maintenance: { label: 'Maintenance Services', icon: 'build' },
+  washing: { label: 'Washing Services', icon: 'wash' },
+  engine_checkup: { label: 'Engine Check Up', icon: 'monitor_heart' },
+  tuning: { label: 'Tuning Performance', icon: 'speed' },
+}
+
+function getServiceCategoryKey(selectedServices) {
+  if (!Array.isArray(selectedServices) || selectedServices.length === 0) {
+    return null
+  }
+
+  // 1. Try explicit category
+  for (const service of selectedServices) {
+    const category = service.category || service.main_category
+    if (category && CATEGORY_DETAILS[category]) {
+      return category
+    }
+  }
+
+  // 2. Keyword check (names and descriptions)
+  const allNames = selectedServices
+    .map((service) =>
+      `${service.name || ''} ${service.description || ''}`.toLowerCase(),
+    )
+    .join(' ')
+
+  if (
+    allNames.includes('wash') ||
+    allNames.includes('clean') ||
+    allNames.includes('detail')
+  ) {
+    return 'washing'
+  }
+  if (
+    allNames.includes('engine') ||
+    allNames.includes('oil') ||
+    allNames.includes('checkup') ||
+    allNames.includes('spark') ||
+    allNames.includes('fluid') ||
+    allNames.includes('filter')
+  ) {
+    return 'engine_checkup'
+  }
+  if (
+    allNames.includes('tun') ||
+    allNames.includes('performance') ||
+    allNames.includes('speed') ||
+    allNames.includes('ecu') ||
+    allNames.includes('dyno') ||
+    allNames.includes('1000cc') ||
+    allNames.includes('600cc') ||
+    allNames.includes('200cc') ||
+    allNames.includes('400cc') ||
+    allNames.includes('class') ||
+    allNames.includes('above')
+  ) {
+    return 'tuning'
+  }
+  if (
+    allNames.includes('mainten') ||
+    allNames.includes('repair') ||
+    allNames.includes('inspect') ||
+    allNames.includes('brake') ||
+    allNames.includes('tire')
+  ) {
+    return 'maintenance'
+  }
+
+  return null
+}
+
+function getServiceImage(selectedServices) {
+  const categoryKey = getServiceCategoryKey(selectedServices)
+  return SERVICE_IMAGES[categoryKey] || DEFAULT_BIKE_IMAGE
+}
 
 function getBikeSortValue(bike) {
   if (bike.createdAt) {
@@ -92,7 +175,10 @@ function normalizeSelectedServices(booking) {
     return booking.selected_services.map((service) => ({
       id: service.id ?? `${booking.id}-${service.name}`,
       name: service.name,
+      description: service.description || null,
       price: Number(service.price || 0),
+      category: service.category || service.main_category || null,
+      main_category: service.main_category || service.category || null,
     }))
   }
 
@@ -101,6 +187,7 @@ function normalizeSelectedServices(booking) {
         {
           id: booking.service_id ?? `${booking.id}-service`,
           name: booking.service_name,
+          description: booking.notes || null,
           price: Number(booking.total_amount || 0),
         },
       ]
@@ -116,6 +203,9 @@ function mapBookingToBike(booking) {
           (sum, service) => sum + Number(service.price || 0),
           0,
         )
+
+  const categoryKey = getServiceCategoryKey(selectedServices)
+  const categoryInfo = CATEGORY_DETAILS[categoryKey]
 
   return {
     id: booking.id,
@@ -139,12 +229,15 @@ function mapBookingToBike(booking) {
           'Service Booking',
     lead: 'Unassigned',
     milestone: getMilestone(booking.status),
-    image: DEFAULT_BIKE_IMAGE,
+    image: booking.image_url || getServiceImage(selectedServices),
     selectedServices,
     totalAmount,
     notes: booking.notes,
     createdAt: booking.created_at ?? new Date().toISOString(),
     canCancel: booking.can_customer_cancel ?? canCustomerCancel(booking.status),
+    mainCategoryLabel:
+      booking.main_category_label || categoryInfo?.label || null,
+    mainCategoryIcon: booking.main_category_icon || categoryInfo?.icon || null,
   }
 }
 
@@ -169,7 +262,7 @@ function getInitialGarageState() {
   }
 }
 
-export default function GaragePage() {
+export default function GaragePage({ onUnauthorized }) {
   const initialGarageState = getInitialGarageState()
   const [expandedBikeId, setExpandedBikeId] = useState(null)
   const [serviceRequestStep, setServiceRequestStep] = useState('closed')
@@ -230,6 +323,12 @@ export default function GaragePage() {
         )
 
         if (!response.ok) {
+          if (response.status === 401) {
+            if (onUnauthorized) {
+              onUnauthorized()
+              return
+            }
+          }
           throw new Error(
             `Failed to load active bookings: ${response.statusText}`,
           )
@@ -264,7 +363,7 @@ export default function GaragePage() {
       isMounted = false
       clearInterval(poller)
     }
-  }, [])
+  }, [onUnauthorized])
 
   useEffect(() => {
     try {
@@ -294,11 +393,18 @@ export default function GaragePage() {
     setServiceRequestStep('bike_info')
   }
 
+  const handleBackToServiceSelection = () => {
+    setServiceRequestStep('service_selection')
+  }
+
   const handleServiceSelection = async (bikeInfo, selectedServices) => {
     const normalizedServices = selectedServices.map((service) => ({
       id: service.id,
       name: service.name,
+      description: service.description || null,
       price: Number(service.price || 0),
+      category: service.category || service.main_category || null,
+      main_category: service.main_category || service.category || null,
     }))
     const totalAmount = normalizedServices.reduce(
       (sum, service) => sum + Number(service.price || 0),
@@ -364,6 +470,12 @@ export default function GaragePage() {
       })
 
       if (!response.ok) {
+        if (response.status === 401) {
+          if (onUnauthorized) {
+            onUnauthorized()
+            return
+          }
+        }
         const errorData = await response.json()
         throw new Error(
           errorData.message ||
@@ -434,6 +546,12 @@ export default function GaragePage() {
 
       const result = await response.json()
       if (!response.ok) {
+        if (response.status === 401) {
+          if (onUnauthorized) {
+            onUnauthorized()
+            return
+          }
+        }
         throw new Error(
           result.message || `Failed to cancel booking: ${response.statusText}`,
         )
@@ -486,11 +604,19 @@ export default function GaragePage() {
       />
 
       <ServiceSelectionModal
+        key={
+          serviceRequestStep === 'service_selection'
+            ? `service-selection-open-${currentBikeInfo?.plateNumber || ''}`
+            : 'service-selection-closed'
+        }
         isOpen={serviceRequestStep === 'service_selection'}
         onClose={handleCloseModals}
         onBack={handleBackToBikeInfo}
         onServiceSelect={handleServiceSelection}
         bikeInfo={currentBikeInfo}
+        initialSelectedServices={
+          pendingBookingRequest?.normalizedServices || []
+        }
       />
 
       <BookingScheduleModal
@@ -502,6 +628,7 @@ export default function GaragePage() {
         isOpen={serviceRequestStep === 'schedule'}
         onClose={handleCloseModals}
         onConfirm={handleScheduleConfirm}
+        onBack={handleBackToServiceSelection}
         bikeInfo={pendingBookingRequest?.bikeInfo}
         selectedServices={pendingBookingRequest?.normalizedServices || []}
         totalAmount={pendingBookingRequest?.totalAmount || 0}
@@ -557,6 +684,16 @@ export default function GaragePage() {
                     src={bike.image}
                     alt={`${bike.name} ${bike.model}`}
                   />
+                  {bike.mainCategoryLabel && (
+                    <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm px-2.5 py-1 text-white border border-white/10 shadow-sm">
+                      <span className="material-symbols-outlined text-xs text-secondary">
+                        {bike.mainCategoryIcon}
+                      </span>
+                      <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-white/95 animate-fadeIn">
+                        {bike.mainCategoryLabel}
+                      </span>
+                    </div>
+                  )}
                   <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
                     <span
                       className={`${getStatusBadgeClass(bike.status)} px-3 py-1 font-bold text-[9px] uppercase tracking-widest`}

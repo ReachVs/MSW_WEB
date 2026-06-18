@@ -15,6 +15,32 @@ export default function ProfilePage({ onLogout, profile, onProfileSave }) {
   const [tempUser, setTempUser] = useState(() => activeProfile)
   const [saveMessage, setSaveMessage] = useState('')
 
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size exceeds the 2MB limit.')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setTempUser((prev) => ({
+        ...prev,
+        avatar: reader.result,
+      }))
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleAvatarDelete = () => {
+    setTempUser((prev) => ({
+      ...prev,
+      avatar: null,
+    }))
+  }
+
   const handleSaveProfile = () => {
     const savedProfile = saveStoredProfile(tempUser)
     setTempUser(savedProfile)
@@ -68,7 +94,10 @@ export default function ProfilePage({ onLogout, profile, onProfileSave }) {
               </h2>
               {!editMode && (
                 <button
-                  onClick={() => setEditMode(true)}
+                  onClick={() => {
+                    setTempUser(activeProfile)
+                    setEditMode(true)
+                  }}
                   className="flex items-center gap-2 px-md py-sm bg-primary text-on-primary font-label-sm text-xs uppercase tracking-widest hover:bg-secondary transition-all"
                 >
                   <span className="material-symbols-outlined text-sm">
@@ -79,95 +108,177 @@ export default function ProfilePage({ onLogout, profile, onProfileSave }) {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
-              {editMode ? (
-                <>
-                  <div>
-                    <label className="font-label-sm text-xs uppercase tracking-widest text-outline mb-2 block font-bold">
-                      First Name
-                    </label>
-                    <input
-                      type="text"
-                      value={tempUser.firstName}
-                      onChange={(e) =>
-                        setTempUser({ ...tempUser, firstName: e.target.value })
-                      }
-                      className="w-full px-sm py-2 border border-outline-variant bg-surface text-on-surface font-body-md text-sm focus:outline-none focus:border-secondary"
+            <div className="flex flex-col md:flex-row gap-lg items-center md:items-start">
+              {/* Avatar CRUD Section */}
+              <div className="flex flex-col items-center gap-sm shrink-0 w-32">
+                <div
+                  className={`relative w-32 h-32 border border-outline-variant bg-surface-container-low flex items-center justify-center overflow-hidden group ${
+                    editMode ? 'cursor-pointer' : ''
+                  }`}
+                  onClick={() =>
+                    editMode &&
+                    document.getElementById('avatar-file-input').click()
+                  }
+                >
+                  {tempUser.avatar ? (
+                    <img
+                      src={tempUser.avatar}
+                      alt="User Profile Avatar"
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                  </div>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-primary text-on-primary font-headline-lg text-4xl select-none uppercase">
+                      {tempUser.firstName?.charAt(0) || ''}
+                      {tempUser.lastName?.charAt(0) || ''}
+                    </div>
+                  )}
+                  {editMode && (
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-xs">
+                      <span className="material-symbols-outlined text-white text-lg">
+                        photo_camera
+                      </span>
+                      <span className="font-label-sm text-[8px] uppercase tracking-wider text-white text-center">
+                        Change Photo
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-                  <div>
-                    <label className="font-label-sm text-xs uppercase tracking-widest text-outline mb-2 block font-bold">
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      value={tempUser.lastName}
-                      onChange={(e) =>
-                        setTempUser({ ...tempUser, lastName: e.target.value })
-                      }
-                      className="w-full px-sm py-2 border border-outline-variant bg-surface text-on-surface font-body-md text-sm focus:outline-none focus:border-secondary"
-                    />
-                  </div>
+                <div className="flex flex-col items-center gap-xs w-full text-center">
+                  {editMode ? (
+                    <>
+                      <input
+                        type="file"
+                        id="avatar-file-input"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarChange}
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          document.getElementById('avatar-file-input').click()
+                        }}
+                        className="font-label-sm text-xs text-secondary hover:underline uppercase font-bold"
+                      >
+                        Upload Photo
+                      </button>
+                      {tempUser.avatar && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleAvatarDelete()
+                          }}
+                          className="font-label-sm text-[10px] text-error hover:underline uppercase"
+                        >
+                          Remove Photo
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <span className="font-label-sm text-[10px] uppercase text-outline tracking-wider">
+                      Profile Avatar
+                    </span>
+                  )}
+                </div>
+              </div>
 
-                  <div>
-                    <label className="font-label-sm text-xs uppercase tracking-widest text-outline mb-2 block font-bold">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={tempUser.email}
-                      onChange={(e) =>
-                        setTempUser({ ...tempUser, email: e.target.value })
-                      }
-                      className="w-full px-sm py-2 border border-outline-variant bg-surface text-on-surface font-body-md text-sm focus:outline-none focus:border-secondary"
-                    />
-                  </div>
+              {/* Form Fields Section */}
+              <div className="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-lg">
+                {editMode ? (
+                  <>
+                    <div>
+                      <label className="font-label-sm text-xs uppercase tracking-widest text-outline mb-2 block font-bold">
+                        First Name
+                      </label>
+                      <input
+                        type="text"
+                        value={tempUser.firstName}
+                        onChange={(e) =>
+                          setTempUser({
+                            ...tempUser,
+                            firstName: e.target.value,
+                          })
+                        }
+                        className="w-full px-sm py-2 border border-outline-variant bg-surface text-on-surface font-body-md text-sm focus:outline-none focus:border-secondary"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="font-label-sm text-xs uppercase tracking-widest text-outline mb-2 block font-bold">
-                      Phone
-                    </label>
-                    <input
-                      type="tel"
-                      value={tempUser.phone}
-                      onChange={(e) =>
-                        setTempUser({ ...tempUser, phone: e.target.value })
-                      }
-                      className="w-full px-sm py-2 border border-outline-variant bg-surface text-on-surface font-body-md text-sm focus:outline-none focus:border-secondary"
-                    />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div>
-                    <label className="font-label-sm text-xs uppercase tracking-widest text-outline mb-1 block font-bold">
-                      Name
-                    </label>
-                    <p className="font-body-md text-sm text-on-surface">
-                      {activeProfile.firstName} {activeProfile.lastName}
-                    </p>
-                  </div>
+                    <div>
+                      <label className="font-label-sm text-xs uppercase tracking-widest text-outline mb-2 block font-bold">
+                        Last Name
+                      </label>
+                      <input
+                        type="text"
+                        value={tempUser.lastName}
+                        onChange={(e) =>
+                          setTempUser({ ...tempUser, lastName: e.target.value })
+                        }
+                        className="w-full px-sm py-2 border border-outline-variant bg-surface text-on-surface font-body-md text-sm focus:outline-none focus:border-secondary"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="font-label-sm text-xs uppercase tracking-widest text-outline mb-1 block font-bold">
-                      Email
-                    </label>
-                    <p className="font-body-md text-sm text-on-surface break-all">
-                      {activeProfile.email}
-                    </p>
-                  </div>
+                    <div>
+                      <label className="font-label-sm text-xs uppercase tracking-widest text-outline mb-2 block font-bold">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        value={tempUser.email}
+                        onChange={(e) =>
+                          setTempUser({ ...tempUser, email: e.target.value })
+                        }
+                        className="w-full px-sm py-2 border border-outline-variant bg-surface text-on-surface font-body-md text-sm focus:outline-none focus:border-secondary"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="font-label-sm text-xs uppercase tracking-widest text-outline mb-1 block font-bold">
-                      Phone
-                    </label>
-                    <p className="font-body-md text-sm text-on-surface">
-                      {activeProfile.phone}
-                    </p>
-                  </div>
-                </>
-              )}
+                    <div>
+                      <label className="font-label-sm text-xs uppercase tracking-widest text-outline mb-2 block font-bold">
+                        Phone
+                      </label>
+                      <input
+                        type="tel"
+                        value={tempUser.phone}
+                        onChange={(e) =>
+                          setTempUser({ ...tempUser, phone: e.target.value })
+                        }
+                        className="w-full px-sm py-2 border border-outline-variant bg-surface text-on-surface font-body-md text-sm focus:outline-none focus:border-secondary"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <label className="font-label-sm text-xs uppercase tracking-widest text-outline mb-1 block font-bold">
+                        Name
+                      </label>
+                      <p className="font-body-md text-sm text-on-surface font-bold">
+                        {activeProfile.firstName} {activeProfile.lastName}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="font-label-sm text-xs uppercase tracking-widest text-outline mb-1 block font-bold">
+                        Email
+                      </label>
+                      <p className="font-body-md text-sm text-on-surface break-all font-bold">
+                        {activeProfile.email}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="font-label-sm text-xs uppercase tracking-widest text-outline mb-1 block font-bold">
+                        Phone
+                      </label>
+                      <p className="font-body-md text-sm text-on-surface font-bold">
+                        {activeProfile.phone}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             {editMode && (

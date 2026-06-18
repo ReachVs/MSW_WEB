@@ -9,8 +9,10 @@ import ServiceHistoryPage from './components/ServiceHistoryPage'
 import ProfilePage from './components/ProfilePage'
 import RegisterPage from './components/RegisterPage'
 import CatalogPage from './components/CatalogPage'
-import { getStoredProfile } from './utils/profileStorage'
+import { clearStoredProfile, getStoredProfile } from './utils/profileStorage'
 import './index.css'
+
+const GARAGE_STORAGE_KEY = 'msw-garage-bookings'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -24,12 +26,19 @@ function App() {
   const [profile, setProfile] = useState(() => getStoredProfile())
 
   // handleLogin and handleRegister now set isAuthenticated and navigate to garage
-  const handleLogin = () => {
+  const handleLogin = (savedProfile) => {
+    if (savedProfile) {
+      setProfile(savedProfile)
+    }
+
     setIsAuthenticated(true)
     setCurrentView('garage')
   }
 
-  const handleRegister = () => {
+  const handleRegister = (savedProfile) => {
+    if (savedProfile) {
+      setProfile(savedProfile)
+    }
     setIsAuthenticated(true)
     setCurrentView('garage')
   }
@@ -37,7 +46,9 @@ function App() {
   const handleLogout = () => {
     setIsAuthenticated(false)
     setCurrentView('landing')
-    localStorage.removeItem('authToken') // Clear token on logout
+    localStorage.removeItem('authToken')
+    localStorage.removeItem(GARAGE_STORAGE_KEY)
+    setProfile(clearStoredProfile())
   }
 
   const handleBookServiceSubmit = async (bookingData) => {
@@ -129,9 +140,14 @@ function App() {
           />
         )
       case 'garage':
-        return <GaragePage onAddService={() => triggerBooking()} /> // Pass triggerBooking as onAddService
+        return (
+          <GaragePage
+            onAddService={() => triggerBooking()}
+            onUnauthorized={handleLogout}
+          />
+        ) // Pass triggerBooking as onAddService
       case 'history':
-        return <ServiceHistoryPage />
+        return <ServiceHistoryPage onUnauthorized={handleLogout} />
       case 'catalog':
         return (
           <CatalogPage

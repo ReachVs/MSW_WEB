@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import AuthFooter from './AuthFooter'
 import AuthHeader from './AuthHeader'
+import { saveStoredProfile } from '../utils/profileStorage'
 
 export default function LoginPage({ onLoginSuccess, onNavigate }) {
   const [email, setEmail] = useState('')
@@ -27,15 +28,39 @@ export default function LoginPage({ onLoginSuccess, onNavigate }) {
       const data = await response.json()
 
       if (response.ok) {
-        // Assuming your API returns a token like { access_token: '...' }
         localStorage.setItem('authToken', data.access_token)
-        onLoginSuccess()
+
+        let savedProfile = null
+
+        try {
+          const profileResponse = await fetch(
+            'http://localhost:8080/api/auth/me',
+            {
+              headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${data.access_token}`,
+              },
+            },
+          )
+
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json()
+            savedProfile = saveStoredProfile({
+              firstName: profileData.data?.name?.split(' ')?.[0] || 'Customer',
+              lastName:
+                profileData.data?.name?.split(' ')?.slice(1).join(' ') || '',
+              email: profileData.data?.email || email,
+            })
+          }
+        } catch (profileError) {
+          console.error('Profile hydration error:', profileError)
+        }
+
+        onLoginSuccess(savedProfile)
       } else {
-        // Handle API errors (e.g., invalid credentials)
         setError(data.message || 'Login failed. Please check your credentials.')
       }
     } catch (err) {
-      // Handle network errors
       setError('Network error. Please try again later.')
       console.error('Login network error:', err)
     } finally {

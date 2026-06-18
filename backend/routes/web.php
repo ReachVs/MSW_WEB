@@ -5,7 +5,9 @@ use App\Http\Controllers\Admin\AdminBookingController;
 use App\Http\Controllers\Admin\AdminCalendarController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminInventoryController;
+use App\Http\Controllers\Admin\AdminMechanicController;
 use App\Http\Controllers\Admin\AdminQueueController;
+use App\Http\Controllers\MechanicPortalController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -25,14 +27,32 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::patch('/calendar/settings', [AdminCalendarController::class, 'updateSettings'])
             ->name('calendar.settings');
         Route::get('/queue', [AdminQueueController::class, 'index'])->name('queue');
+        Route::get('/queue/sync', [AdminQueueController::class, 'sync'])->name('queue.sync');
         Route::get('/inventory', [AdminInventoryController::class, 'index'])->name('inventory');
+        Route::get('/mechanics', [AdminMechanicController::class, 'index'])->name('mechanics');
+        Route::post('/mechanics', [AdminMechanicController::class, 'store'])->name('mechanics.store');
+        Route::patch('/mechanics/{mechanic}', [AdminMechanicController::class, 'update'])->name('mechanics.update');
         Route::get('/bookings/create', [AdminBookingController::class, 'create'])
             ->name('bookings.create');
         Route::post('/bookings', [AdminBookingController::class, 'store'])
             ->name('bookings.store');
         Route::patch('/bookings/{booking}/status', [AdminBookingController::class, 'updateStatus'])
             ->name('bookings.status');
+        Route::patch('/bookings/{booking}/mechanic', [AdminBookingController::class, 'updateMechanic'])
+            ->name('bookings.mechanic');
         Route::delete('/bookings/{booking}', [AdminBookingController::class, 'destroy'])
             ->name('bookings.destroy');
     });
+});
+
+Route::prefix('mechanic')->name('mechanic.')->group(function (): void {
+    Route::get('/', [MechanicPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/calendar', [MechanicPortalController::class, 'calendar'])->name('calendar');
+    Route::get('/queue', [MechanicPortalController::class, 'queue'])->name('queue');
+    Route::get('/queue/sync', [MechanicPortalController::class, 'queueSync'])->name('queue.sync');
+    Route::get('/mechanics', [MechanicPortalController::class, 'mechanics'])->name('mechanics');
+    Route::patch('/bookings/{booking}/status', [MechanicPortalController::class, 'updateStatus'])
+        ->name('bookings.status');
+    Route::patch('/bookings/{booking}/mechanic', [MechanicPortalController::class, 'updateMechanic'])
+        ->name('bookings.mechanic');
 });

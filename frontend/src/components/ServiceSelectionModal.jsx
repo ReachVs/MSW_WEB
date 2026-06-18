@@ -46,13 +46,16 @@ export default function ServiceSelectionModal({
   onBack,
   onServiceSelect,
   bikeInfo,
+  initialSelectedServices = [],
 }) {
   const [catalogData, setCatalogData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [expandedMain, setExpandedMain] = useState(null)
   const [expandedSub, setExpandedSub] = useState({})
-  const [selectedServices, setSelectedServices] = useState([])
+  const [selectedServices, setSelectedServices] = useState(
+    () => initialSelectedServices,
+  )
 
   useEffect(() => {
     if (!isOpen) return
@@ -75,7 +78,6 @@ export default function ServiceSelectionModal({
         setCatalogData(data.data)
         setExpandedMain(null)
         setExpandedSub({})
-        setSelectedServices([])
       } catch (err) {
         setError(err.message)
       } finally {
@@ -238,7 +240,9 @@ export default function ServiceSelectionModal({
                     )
                       .filter(
                         ([subKey]) =>
-                          subKey !== '_root' && subKey !== 'General',
+                          subKey !== '_root' &&
+                          subKey !== 'General' &&
+                          subKey !== 'General Maintenance',
                       )
                       .map(([subKey, subData]) => {
                         const expandKey = `${expandedMain}-${subKey}`

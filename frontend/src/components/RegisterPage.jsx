@@ -1,6 +1,18 @@
 import { useState } from 'react'
 import AuthFooter from './AuthFooter'
 import AuthHeader from './AuthHeader'
+import { saveStoredProfile } from '../utils/profileStorage'
+
+function buildProfileFromName(fullName, email) {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean)
+  const [firstName = 'Customer', ...lastNameParts] = parts
+
+  return saveStoredProfile({
+    firstName,
+    lastName: lastNameParts.join(' '),
+    email,
+  })
+}
 
 export default function RegisterPage({ onRegisterSuccess, onNavigate }) {
   const [formData, setFormData] = useState({
@@ -22,7 +34,7 @@ export default function RegisterPage({ onRegisterSuccess, onNavigate }) {
     if (error) setError('')
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
@@ -42,10 +54,50 @@ export default function RegisterPage({ onRegisterSuccess, onNavigate }) {
     }
 
     setIsLoading(true)
-    setTimeout(() => {
+
+    try {
+      const response = await fetch('http://localhost:8080/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.fullName.trim(),
+          email: formData.email.trim(),
+          password: formData.password,
+          password_confirmation: formData.confirmPassword,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        const validationMessage = Object.values(data.errors || {})
+          .flat()
+          .join(' ')
+
+        setError(
+          validationMessage ||
+            data.message ||
+            'Registration failed. Please try again.',
+        )
+        return
+      }
+
+      localStorage.setItem('authToken', data.access_token)
+      const savedProfile = buildProfileFromName(
+        formData.fullName,
+        formData.email.trim(),
+      )
+
+      onRegisterSuccess(savedProfile)
+    } catch (err) {
+      setError('Network error. Please try again later.')
+      console.error('Registration network error:', err)
+    } finally {
       setIsLoading(false)
-      onRegisterSuccess()
-    }, 1000)
+    }
   }
 
   return (

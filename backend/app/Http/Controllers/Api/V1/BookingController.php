@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreBookingRequest;
 use App\Http\Resources\BookingResource;
 use App\Models\Booking;
+use App\Models\Service;
 use App\Support\WorkshopCalendar;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -33,6 +34,13 @@ class BookingController extends Controller
     public function store(StoreBookingRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $selectedServices = $this->resolveSelectedServices($data);
+
+        if ($selectedServices === []) {
+            return response()->json([
+                'message' => 'Please select at least one valid service.',
+            ], 422);
+        }
 
         $data['status'] = Booking::STATUS_PENDING;
         $data['customer_name'] = $data['customer_name'] ?? $request->user()->name;
@@ -40,7 +48,13 @@ class BookingController extends Controller
         $data['starts_at'] = $data['starts_at'] ?? now();
         $data['starts_at'] = Carbon::parse($data['starts_at'])->seconds(0);
         $data['ends_at'] = $data['ends_at'] ?? Carbon::parse($data['starts_at'])->copy()->addHour();
-        $data['selected_services'] = $data['selected_services'] ?? [];
+        $data['selected_services'] = $selectedServices;
+        $data['service_id'] = $selectedServices[0]['id'];
+        $data['service_name'] = collect($selectedServices)
+            ->pluck('name')
+            ->implode(', ');
+        $data['total_amount'] = collect($selectedServices)
+            ->sum(fn (array $service): float => (float) $service['price']);
 
         if ($data['starts_at']->lt(now())) {
             return response()->json([
@@ -52,11 +66,6 @@ class BookingController extends Controller
             return response()->json([
                 'message' => 'The selected time slot is no longer available.',
             ], 422);
-        }
-
-        if (! array_key_exists('total_amount', $data)) {
-            $data['total_amount'] = collect($data['selected_services'])
-                ->sum(fn (array $service): float => (float) ($service['price'] ?? 0));
         }
 
         $booking = $request->user()->bookings()->create($data);
@@ -144,5 +153,78 @@ class BookingController extends Controller
             ->pluck('notes');
 
         return response()->json(['data' => $vehicles]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return list<array<string, mixed>>
+     */
+    private function resolveSelectedServices(array $data): array
+    {
+        $requestedIds = collect($data['selected_services'] ?? [])
+            ->pluck('id')
+            ->filter()
+            ->map(fn (mixed $id): int => (int) $id);
+
+        if ($requestedIds->isEmpty() && isset($data['service_id'])) {
+            $requestedIds->push((int) $data['service_id']);
+        }
+
+        $requestedIds = $requestedIds
+            ->unique()
+            ->values();
+
+        if ($requestedIds->isEmpty()) {
+            return [];
+        }
+
+        $servicesById = Service::query()
+            ->active()
+            ->whereIn('id', $requestedIds)
+            ->get()
+            ->keyBy('id');
+
+        if ($servicesById->count() !== $requestedIds->count()) {
+            return [];
+        }
+
+        $hasUnsupportedService = $requestedIds->contains(function (int $serviceId) use ($servicesById): bool {
+            /** @var Service $service */
+            $service = $servicesById->get($serviceId);
+
+            return $service->selection_mode !== 1
+                && ! ($service->main_category === 'washing' && $service->selection_mode === 0);
+        });
+
+        if ($hasUnsupportedService) {
+            return [];
+        }
+
+        return $requestedIds->map(function (int $serviceId) use ($servicesById): array {
+            /** @var Service $service */
+            $service = $servicesById->get($serviceId);
+            $price = (float) ($service->price ?? 0);
+
+            if ($service->main_category === 'washing' && $service->selection_mode === 0) {
+                $price = (float) Service::query()
+                    ->active()
+                    ->where('main_category', 'washing')
+                    ->where('sub_category', $service->sub_category)
+                    ->where('selection_mode', 1)
+                    ->sum('price');
+            }
+
+            return [
+                'id' => $service->id,
+                'name' => $service->name,
+                'description' => $service->description,
+                'price' => $price,
+                'category' => $service->category,
+                'main_category' => $service->main_category,
+                'sub_category' => $service->sub_category,
+                'icon' => $service->icon,
+                'image' => $service->image,
+            ];
+        })->all();
     }
 }

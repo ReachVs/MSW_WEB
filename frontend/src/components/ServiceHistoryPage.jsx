@@ -8,7 +8,7 @@ function formatStatusLabel(status) {
   return (status || 'completed').replace(/_/g, ' ')
 }
 
-export default function ServiceHistoryPage() {
+export default function ServiceHistoryPage({ onUnauthorized }) {
   const [expandedLog, setExpandedLog] = useState(null)
 
   const [logs, setLogs] = useState([])
@@ -47,6 +47,9 @@ export default function ServiceHistoryPage() {
         if (!response.ok) {
           if (response.status === 401) {
             setError('Unauthorized. Please log in again.')
+            if (onUnauthorized) {
+              onUnauthorized()
+            }
           } else {
             setError(`Failed to fetch service history: ${response.statusText}`)
           }
@@ -86,7 +89,7 @@ export default function ServiceHistoryPage() {
     }
 
     fetchCompletedBookings()
-  }, [])
+  }, [onUnauthorized])
 
   // Detailed info database (kept for now, but ideally would come from backend)
   const detailsDatabase = {
@@ -140,6 +143,12 @@ export default function ServiceHistoryPage() {
       const data = await response.json().catch(() => ({}))
 
       if (!response.ok) {
+        if (response.status === 401) {
+          if (onUnauthorized) {
+            onUnauthorized()
+            return
+          }
+        }
         throw new Error(
           data.message || 'Failed to remove the selected archive record.',
         )
@@ -318,10 +327,10 @@ export default function ServiceHistoryPage() {
                       <th className="py-md px-md font-label-sm tracking-widest uppercase font-bold">
                         SERVICE TYPE
                       </th>
-                      <th className="py-md px-md font-label-sm tracking-widest uppercase font-bold">
+                      <th className="py-md px-md font-label-sm tracking-widest uppercase font-bold text-right">
                         FEE
                       </th>
-                      <th className="py-md px-md font-label-sm tracking-widest uppercase font-bold">
+                      <th className="py-md px-md font-label-sm tracking-widest uppercase font-bold text-center">
                         STATUS
                       </th>
                       <th className="py-md px-md font-label-sm tracking-widest uppercase font-bold text-right">
@@ -357,11 +366,11 @@ export default function ServiceHistoryPage() {
                                 {log.serviceType}
                               </span>
                             </td>
-                            <td className="py-md px-md mono-data font-bold text-primary">
+                            <td className="py-md px-md mono-data font-bold text-primary text-right">
                               {log.fee}
                             </td>
                             <td className="py-md px-md">
-                              <div className="flex items-center space-x-1.5">
+                              <div className="flex items-center justify-center space-x-1.5">
                                 <span
                                   className={`w-2 h-2 rounded-none ${log.status === 'completed' ? 'bg-green-600' : 'bg-error'}`}
                                 ></span>
@@ -371,13 +380,16 @@ export default function ServiceHistoryPage() {
                               </div>
                             </td>
                             <td className="py-md px-md text-right">
-                              <div className="flex items-center justify-end gap-3">
+                              <div className="flex items-center justify-end gap-sm">
                                 <button
                                   onClick={() => toggleExpand(log.id)}
                                   className="font-label-sm text-xs text-primary hover:text-secondary transition-colors underline underline-offset-4 decoration-outline-variant group-hover:decoration-secondary uppercase font-bold"
                                 >
                                   {isExpanded ? 'Collapse Data' : 'Expand Data'}
                                 </button>
+                                <span className="text-outline-variant select-none">
+                                  /
+                                </span>
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveLog(log.id)}

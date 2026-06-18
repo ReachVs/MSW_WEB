@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\Mechanic;
 use Illuminate\View\View;
 
 class AdminDashboardController extends Controller
@@ -15,6 +16,9 @@ class AdminDashboardController extends Controller
             ->where('status', Booking::STATUS_COMPLETED)
             ->count();
         $totalBookings = Booking::count();
+        $mechanics = Mechanic::query()
+            ->orderBy('name')
+            ->get();
 
         $todayBookings = Booking::whereDate('starts_at', today())
             ->with('mechanic')
@@ -38,7 +42,8 @@ class AdminDashboardController extends Controller
             'completedToday',
             'totalBookings',
             'todayBookings',
-            'workshopCards'
+            'workshopCards',
+            'mechanics',
         ));
     }
 }

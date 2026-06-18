@@ -6,6 +6,7 @@ const DEFAULT_PROFILE = {
   email: 'dominic.turner@madape.com',
   phone: '+1 (555) 123-4567',
   joinDate: '2024-06-15',
+  avatar: null,
 }
 
 export function getStoredProfile() {
@@ -38,6 +39,16 @@ export function saveStoredProfile(profile) {
   }
 
   return normalizedProfile
+}
+
+export function clearStoredProfile() {
+  try {
+    localStorage.removeItem(PROFILE_STORAGE_KEY)
+  } catch {
+    // Ignore localStorage write failures.
+  }
+
+  return DEFAULT_PROFILE
 }
 
 export function getProfileDisplayName(profile = getStoredProfile()) {

@@ -61,7 +61,10 @@ export default function Sidebar({
           <img
             alt="User Profile Avatar"
             className="w-10 h-10 object-cover border border-outline-variant grayscale hover:grayscale-0 transition-all duration-300"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQmUO03Kwf962DfSmx1-c1j5lJrq4Fxx57pTVGgY9XA1PszGQZ0-jQklE-kOPBCR46pF2vG_wbmtM_nyd3Y5L4_a6_N0U4bIXHg-azPleHifsA55JRbK1CvauKKKEv3apKf0s6K6qk1R4GdffThaqdjYLeMubCn0tCs1GStvAQGgKBfT8Vyyc4YrQ55PdBfgzp3cdnSIgwSYP6oLRzZB9mdR5Co_dkAMNi-h_67-Rvfe_BeBiImx-mnPJiwwE7zAOa-evuGp-xxHNu"
+            src={
+              profile?.avatar ||
+              'https://lh3.googleusercontent.com/aida-public/AB6AXuAQmUO03Kwf962DfSmx1-c1j5lJrq4Fxx57pTVGgY9XA1PszGQZ0-jQklE-kOPBCR46pF2vG_wbmtM_nyd3Y5L4_a6_N0U4bIXHg-azPleHifsA55JRbK1CvauKKKEv3apKf0s6K6qk1R4GdffThaqdjYLeMubCn0tCs1GStvAQGgKBfT8Vyyc4YrQ55PdBfgzp3cdnSIgwSYP6oLRzZB9mdR5Co_dkAMNi-h_67-Rvfe_BeBiImx-mnPJiwwE7zAOa-evuGp-xxHNu'
+            }
           />
           <div className="overflow-hidden">
             <p className="font-label-sm text-[9px] leading-none mb-1 opacity-60">

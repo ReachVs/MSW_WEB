@@ -2,6 +2,14 @@
 @section('title', 'Calendar')
 @php
     $page = 'calendar';
+    $calendarRouteName = $calendarRouteName ?? 'admin.calendar';
+    $statusRouteName = $statusRouteName ?? 'admin.bookings.status';
+    $mechanicRouteName = $mechanicRouteName ?? 'admin.bookings.mechanic';
+    $deleteRouteName = $deleteRouteName ?? 'admin.bookings.destroy';
+    $canAssignMechanic = $canAssignMechanic ?? true;
+    $canManageCapacity = $canManageCapacity ?? true;
+    $canUpdateStatus = $canUpdateStatus ?? true;
+    $canDeleteBookings = $canDeleteBookings ?? true;
     $statusLabels = [
         \App\Models\Booking::STATUS_PENDING => 'Pending',
         \App\Models\Booking::STATUS_CONFIRMED => 'Confirmed',
@@ -14,6 +22,12 @@
     $monthMap = $monthDays->keyBy('date');
     $calendarStart = $selectedMonth->copy()->startOfMonth()->startOfWeek();
     $calendarEnd = $selectedMonth->copy()->endOfMonth()->endOfWeek();
+    $categoryColors = [
+        'washing' => 'border-green-600/30 bg-green-600/10 text-green-600',
+        'tuning' => 'border-yellow-600/30 bg-yellow-600/10 text-yellow-600',
+        'engine_checkup' => 'border-red-600/30 bg-red-600/10 text-red-600',
+        'maintenance' => 'border-blue-600/30 bg-blue-600/10 text-blue-600',
+    ];
 @endphp
 
 @section('content')
@@ -57,11 +71,11 @@
                         <h2 class="mt-xs font-headline-md text-primary uppercase">{{ $selectedMonth->format('F Y') }}</h2>
                     </div>
                     <div class="flex flex-wrap gap-sm">
-                        <a href="{{ route('admin.calendar', ['month' => $selectedMonth->copy()->subMonth()->format('Y-m-01'), 'date' => $selectedDate->toDateString()]) }}"
+                        <a href="{{ route($calendarRouteName, ['month' => $selectedMonth->copy()->subMonth()->format('Y-m-01'), 'date' => $selectedDate->toDateString()]) }}"
                            class="border border-outline-variant bg-white px-md py-sm font-label-sm uppercase tracking-widest hover:bg-surface-container-high">Prev</a>
-                        <a href="{{ route('admin.calendar', ['month' => now()->format('Y-m-01'), 'date' => now()->toDateString()]) }}"
+                        <a href="{{ route($calendarRouteName, ['month' => now()->format('Y-m-01'), 'date' => now()->toDateString()]) }}"
                            class="border border-outline-variant bg-white px-md py-sm font-label-sm uppercase tracking-widest hover:bg-surface-container-high">Today</a>
-                        <a href="{{ route('admin.calendar', ['month' => $selectedMonth->copy()->addMonth()->format('Y-m-01'), 'date' => $selectedDate->toDateString()]) }}"
+                        <a href="{{ route($calendarRouteName, ['month' => $selectedMonth->copy()->addMonth()->format('Y-m-01'), 'date' => $selectedDate->toDateString()]) }}"
                            class="border border-outline-variant bg-white px-md py-sm font-label-sm uppercase tracking-widest hover:bg-surface-container-high">Next</a>
                     </div>
                 </div>
@@ -92,7 +106,7 @@
                                             ? 'bg-orange-500 text-white'
                                             : 'bg-secondary text-on-secondary');
                                 @endphp
-                                <a href="{{ route('admin.calendar', ['month' => $selectedMonth->format('Y-m-01'), 'date' => $date->toDateString()]) }}"
+                                <a href="{{ route($calendarRouteName, ['month' => $selectedMonth->format('Y-m-01'), 'date' => $date->toDateString()]) }}"
                                    class="flex min-h-[132px] flex-col border p-sm transition-colors {{ $isSelected ? 'border-secondary bg-secondary/10' : 'border-outline-variant bg-white hover:bg-surface-container-low' }} {{ !$isCurrentMonth ? 'opacity-40' : '' }}">
                                     <div class="flex items-start justify-between">
                                         <span class="text-sm font-bold text-primary">{{ $date->day }}</span>
@@ -134,7 +148,19 @@
                         <div class="rounded border border-outline-variant bg-white p-md">
                             <div class="flex flex-col gap-md lg:flex-row lg:items-start lg:justify-between">
                                 <div>
-                                    <p class="font-label-sm uppercase tracking-widest text-secondary">{{ $booking->starts_at->format('h:i A') }}</p>
+                                    <div class="flex flex-wrap items-center gap-sm">
+                                        <p class="font-label-sm uppercase tracking-widest text-secondary">{{ $booking->starts_at->format('h:i A') }}</p>
+                                        @if($booking->getCategoryKey())
+                                            @php
+                                                $catDetails = $booking->getCategoryDetails();
+                                                $colorClass = $categoryColors[$booking->getCategoryKey()] ?? 'border-outline-variant bg-surface-container-high text-primary';
+                                            @endphp
+                                            <span class="rounded border px-sm py-0.5 text-[9px] font-label-sm uppercase tracking-widest inline-flex items-center gap-xs {{ $colorClass }}">
+                                                <span class="material-symbols-outlined text-[10px]">{{ $catDetails['icon'] }}</span>
+                                                {{ $catDetails['label'] }}
+                                            </span>
+                                        @endif
+                                    </div>
                                     <p class="mt-xs font-bold uppercase text-primary">{{ $booking->customer_name }}</p>
                                     <p class="text-sm text-on-surface-variant">{{ $booking->bike_name }} {{ $booking->model }}</p>
                                 </div>
@@ -157,6 +183,18 @@
                                 <div class="rounded border border-outline-variant bg-surface-container-low p-sm xl:col-span-1">
                                     <p class="text-[10px] font-label-sm uppercase tracking-widest text-outline">Service Type</p>
                                     <p class="mt-xs text-sm text-primary">{{ $booking->service_name }}</p>
+                                    @if($booking->getCategoryKey())
+                                        @php
+                                            $catDetails = $booking->getCategoryDetails();
+                                            $colorClass = $categoryColors[$booking->getCategoryKey()] ?? 'border-outline-variant bg-surface-container-high text-primary';
+                                        @endphp
+                                        <div class="mt-xs mb-xs">
+                                            <span class="rounded border px-sm py-0.5 text-[9px] font-label-sm uppercase tracking-widest inline-flex items-center gap-xs {{ $colorClass }}">
+                                                <span class="material-symbols-outlined text-[10px]">{{ $catDetails['icon'] }}</span>
+                                                {{ $catDetails['label'] }}
+                                            </span>
+                                        </div>
+                                    @endif
                                     <p class="mt-xs text-xs text-on-surface-variant">Engine: {{ $booking->engine_capacity ?: 'N/A' }} CC</p>
                                 </div>
                                 <div class="rounded border border-outline-variant bg-surface-container-low p-sm xl:col-span-1">
@@ -168,6 +206,11 @@
                                     <p class="text-[10px] font-label-sm uppercase tracking-widest text-outline">Current Status</p>
                                     <p class="mt-xs text-sm font-bold text-primary">{{ $statusLabels[$booking->status] ?? ucfirst(str_replace('_', ' ', $booking->status)) }}</p>
                                 </div>
+                                <div class="rounded border border-outline-variant bg-surface-container-low p-sm xl:col-span-1">
+                                    <p class="text-[10px] font-label-sm uppercase tracking-widest text-outline">Assigned Mechanic</p>
+                                    <p class="mt-xs text-sm font-bold text-primary">{{ $booking->mechanic?->name ?? 'Unassigned' }}</p>
+                                    <p class="mt-xs text-xs text-on-surface-variant">{{ $booking->mechanic?->specialization ?: 'Workshop team allocation pending' }}</p>
+                                </div>
                             </div>
 
                             <div class="mt-sm rounded border border-outline-variant bg-surface-container-low p-sm">
@@ -176,27 +219,39 @@
                             </div>
 
                             <div class="mt-md flex flex-col gap-sm xl:flex-row xl:items-center xl:justify-between">
+                                @include('admin.partials.mechanic-assignment', [
+                                    'booking' => $booking,
+                                    'mechanics' => $mechanics,
+                                    'mechanicRouteName' => $mechanicRouteName,
+                                    'canAssignMechanic' => $canAssignMechanic,
+                                    'mechanicSelectClass' => 'min-w-[16rem] border border-outline-variant bg-white px-sm py-sm font-label-sm text-[10px] uppercase tracking-widest',
+                                    'mechanicButtonClass' => 'border border-outline-variant px-md py-sm text-[10px] font-label-sm uppercase tracking-widest text-primary hover:bg-surface-container-high',
+                                ])
                                 <div class="flex flex-wrap gap-sm">
-                                    @foreach($booking->allowedNextStatuses() as $nextStatus)
-                                        <form method="POST" action="{{ route('admin.bookings.status', $booking) }}">
-                                            @csrf
-                                            @method('PATCH')
-                                            <input type="hidden" name="status" value="{{ $nextStatus }}">
-                                            <button
-                                                class="border border-outline-variant bg-white px-md py-sm text-[10px] font-label-sm uppercase tracking-widest text-primary hover:bg-surface-container-high">
-                                                {{ $statusLabels[$nextStatus] ?? ucfirst(str_replace('_', ' ', $nextStatus)) }}
-                                            </button>
-                                        </form>
-                                    @endforeach
+                                    @if($canUpdateStatus)
+                                        @foreach($booking->allowedNextStatuses() as $nextStatus)
+                                            <form method="POST" action="{{ route($statusRouteName, $booking) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="status" value="{{ $nextStatus }}">
+                                                <button
+                                                    class="border border-outline-variant bg-white px-md py-sm text-[10px] font-label-sm uppercase tracking-widest text-primary hover:bg-surface-container-high">
+                                                    {{ $statusLabels[$nextStatus] ?? ucfirst(str_replace('_', ' ', $nextStatus)) }}
+                                                </button>
+                                            </form>
+                                        @endforeach
+                                    @endif
                                 </div>
 
-                                <form method="POST" action="{{ route('admin.bookings.destroy', $booking) }}" onsubmit="return confirm('Delete this booking?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="border border-error bg-error/10 px-md py-sm text-[10px] font-label-sm uppercase tracking-widest text-error hover:bg-error hover:text-on-error">
-                                        Delete Booking
-                                    </button>
-                                </form>
+                                @if($canDeleteBookings)
+                                    <form method="POST" action="{{ route($deleteRouteName, $booking) }}" onsubmit="return confirm('Delete this booking?');">
+                                            @csrf
+                                        @method('DELETE')
+                                        <button class="border border-error bg-error/10 px-md py-sm text-[10px] font-label-sm uppercase tracking-widest text-error hover:bg-error hover:text-on-error">
+                                            Delete Booking
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     @empty
@@ -228,35 +283,37 @@
                 </div>
             </div>
 
-            <div class="border border-outline-variant bg-surface-container-lowest p-md">
-                <h2 class="font-headline-md text-primary uppercase">Capacity Settings</h2>
-                <p class="mt-xs text-sm text-on-surface-variant">
-                    Keep workshop booking limits here.
-                </p>
-                <form method="POST" action="{{ route('admin.calendar.settings') }}" class="mt-md space-y-sm">
-                    @csrf
-                    @method('PATCH')
-                    <div>
-                        <label class="block font-label-sm uppercase tracking-widest text-outline">Operating Start</label>
-                        <input type="time" name="operating_start_time" value="{{ $settings->operating_start_time }}" class="mt-xs w-full border border-outline-variant bg-white px-sm py-sm">
-                    </div>
-                    <div>
-                        <label class="block font-label-sm uppercase tracking-widest text-outline">Operating End</label>
-                        <input type="time" name="operating_end_time" value="{{ $settings->operating_end_time }}" class="mt-xs w-full border border-outline-variant bg-white px-sm py-sm">
-                    </div>
-                    <div>
-                        <label class="block font-label-sm uppercase tracking-widest text-outline">Max Daily Bookings</label>
-                        <input type="number" min="1" name="max_daily_bookings" value="{{ $settings->max_daily_bookings }}" class="mt-xs w-full border border-outline-variant bg-white px-sm py-sm">
-                    </div>
-                    <div>
-                        <label class="block font-label-sm uppercase tracking-widest text-outline">Max Per Slot</label>
-                        <input type="number" min="1" name="max_per_slot" value="{{ $settings->max_per_slot }}" class="mt-xs w-full border border-outline-variant bg-white px-sm py-sm">
-                    </div>
-                    <button class="w-full bg-primary px-md py-sm font-label-sm uppercase tracking-widest text-on-primary hover:bg-secondary">
-                        Save Settings
-                    </button>
-                </form>
-            </div>
+            @if($canManageCapacity)
+                <div class="border border-outline-variant bg-surface-container-lowest p-md">
+                    <h2 class="font-headline-md text-primary uppercase">Capacity Settings</h2>
+                    <p class="mt-xs text-sm text-on-surface-variant">
+                        Keep workshop booking limits here.
+                    </p>
+                    <form method="POST" action="{{ route('admin.calendar.settings') }}" class="mt-md space-y-sm">
+                        @csrf
+                        @method('PATCH')
+                        <div>
+                            <label class="block font-label-sm uppercase tracking-widest text-outline">Operating Start</label>
+                            <input type="time" name="operating_start_time" value="{{ $settings->operating_start_time }}" class="mt-xs w-full border border-outline-variant bg-white px-sm py-sm">
+                        </div>
+                        <div>
+                            <label class="block font-label-sm uppercase tracking-widest text-outline">Operating End</label>
+                            <input type="time" name="operating_end_time" value="{{ $settings->operating_end_time }}" class="mt-xs w-full border border-outline-variant bg-white px-sm py-sm">
+                        </div>
+                        <div>
+                            <label class="block font-label-sm uppercase tracking-widest text-outline">Max Daily Bookings</label>
+                            <input type="number" min="1" name="max_daily_bookings" value="{{ $settings->max_daily_bookings }}" class="mt-xs w-full border border-outline-variant bg-white px-sm py-sm">
+                        </div>
+                        <div>
+                            <label class="block font-label-sm uppercase tracking-widest text-outline">Max Per Slot</label>
+                            <input type="number" min="1" name="max_per_slot" value="{{ $settings->max_per_slot }}" class="mt-xs w-full border border-outline-variant bg-white px-sm py-sm">
+                        </div>
+                        <button class="w-full bg-primary px-md py-sm font-label-sm uppercase tracking-widest text-on-primary hover:bg-secondary">
+                            Save Settings
+                        </button>
+                    </form>
+                </div>
+            @endif
         </aside>
     </div>
 </section>

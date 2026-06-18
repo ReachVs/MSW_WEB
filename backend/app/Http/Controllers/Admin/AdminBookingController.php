@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AdminStoreBookingRequest;
 use App\Http\Requests\UpdateBookingStatusRequest;
 use App\Models\Booking;
+use App\Models\Mechanic;
 use App\Models\Service;
 use App\Support\WorkshopCalendar;
 use Carbon\Carbon;
@@ -19,13 +20,39 @@ class AdminBookingController extends Controller
     {
         $this->ensureAdmin($request);
 
-        $services = Service::query()
+        $nonWashingServices = Service::query()
             ->active()
             ->selectable()
-            ->orderBy('main_category')
-            ->orderBy('sub_category')
-            ->orderBy('name')
+            ->where('main_category', '!=', 'washing')
             ->get();
+
+        $washingPackages = Service::query()
+            ->active()
+            ->where('main_category', 'washing')
+            ->whereNotNull('sub_category')
+            ->where('selection_mode', 0)
+            ->get();
+
+        $washingItems = Service::query()
+            ->active()
+            ->where('main_category', 'washing')
+            ->where('selection_mode', 1)
+            ->get();
+
+        $washingPackages = $washingPackages->map(function (Service $package) use ($washingItems): Service {
+            $items = $washingItems->where('sub_category', $package->sub_category);
+            $package->price = (float) $items->sum('price');
+            $package->inclusions = $items->pluck('name')->implode(', ');
+
+            return $package;
+        });
+
+        $services = $nonWashingServices->concat($washingPackages)
+            ->sortBy([
+                ['main_category', 'asc'],
+                ['sub_category', 'asc'],
+                ['name', 'asc'],
+            ]);
 
         $defaultDate = now()->startOfDay();
         $timeSlots = WorkshopCalendar::slotDateTimes($defaultDate)
@@ -33,8 +60,11 @@ class AdminBookingController extends Controller
                 'value' => $slot->format('H:i'),
                 'label' => $slot->format('h:i A'),
             ]);
+        $mechanics = Mechanic::query()
+            ->orderBy('name')
+            ->get();
 
-        return view('admin.create-booking', compact('services', 'timeSlots', 'defaultDate'));
+        return view('admin.create-booking', compact('services', 'timeSlots', 'defaultDate', 'mechanics'));
     }
 
     public function store(AdminStoreBookingRequest $request): RedirectResponse
@@ -49,26 +79,33 @@ class AdminBookingController extends Controller
             ->get();
         $startsAt = Carbon::parse($validated['booking_date'].' '.$validated['booking_time'])->seconds(0);
 
-        if ($startsAt->lt(now())) {
-            return back()->withInput()->withErrors([
-                'booking_time' => 'Walk-in entry cannot be scheduled in the past.',
-            ]);
-        }
-
-        if (! WorkshopCalendar::isSlotAvailable($startsAt)) {
+        if (! WorkshopCalendar::isSlotAvailable($startsAt, true)) {
             return back()->withInput()->withErrors([
                 'booking_time' => 'The selected time slot is already full. Please choose another slot.',
             ]);
         }
 
-        $selectedServices = $services->map(fn (Service $service): array => [
-            'id' => $service->id,
-            'name' => $service->name,
-            'price' => (float) $service->price,
-        ])->values()->all();
+        $selectedServices = $services->map(function (Service $service): array {
+            $price = (float) $service->price;
+
+            if ($service->main_category === 'washing' && $service->selection_mode === 0) {
+                $price = (float) Service::query()
+                    ->active()
+                    ->where('main_category', 'washing')
+                    ->where('sub_category', $service->sub_category)
+                    ->where('selection_mode', 1)
+                    ->sum('price');
+            }
+
+            return [
+                'id' => $service->id,
+                'name' => $service->name,
+                'price' => $price,
+            ];
+        })->values()->all();
 
         $serviceName = $services->pluck('name')->implode(', ');
-        $totalAmount = $services->sum(fn (Service $service): float => (float) $service->price);
+        $totalAmount = collect($selectedServices)->sum('price');
 
         Booking::query()->create([
             'user_id' => null,
@@ -82,6 +119,7 @@ class AdminBookingController extends Controller
             'engine_capacity' => $validated['engine_capacity'] ?? null,
             'customer_name' => $validated['customer_name'],
             'customer_email' => $validated['customer_email'] ?: ('walkin-'.now()->timestamp.'@walkin.local'),
+            'mechanic_id' => $validated['mechanic_id'] ?? null,
             'starts_at' => $startsAt,
             'ends_at' => $startsAt->copy()->addHour(),
             'status' => $validated['status'],
@@ -110,6 +148,21 @@ class AdminBookingController extends Controller
         $booking->forceFill(['status' => $nextStatus])->save();
 
         return back()->with('status_success', 'Booking status updated successfully.');
+    }
+
+    public function updateMechanic(Request $request, Booking $booking): RedirectResponse
+    {
+        $this->ensureAdmin($request);
+
+        $validated = $request->validate([
+            'mechanic_id' => ['nullable', 'integer', 'exists:mechanics,id'],
+        ]);
+
+        $booking->forceFill([
+            'mechanic_id' => $validated['mechanic_id'] ?? null,
+        ])->save();
+
+        return back()->with('status_success', 'Assigned mechanic updated successfully.');
     }
 
     public function destroy(Request $request, Booking $booking): RedirectResponse

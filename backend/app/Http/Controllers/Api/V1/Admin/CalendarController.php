@@ -17,7 +17,7 @@ class CalendarController extends Controller
         $this->ensureAdmin($request);
 
         $month = Carbon::parse($request->query('month', now()->format('Y-m-01')))->startOfMonth();
-        $monthDays = WorkshopCalendar::monthAvailability($month);
+        $monthDays = WorkshopCalendar::monthAvailability($month, true);
         $settings = WorkshopCalendar::settings();
 
         return response()->json([

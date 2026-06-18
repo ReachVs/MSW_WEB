@@ -98,13 +98,16 @@
                             <p class="mt-xs text-xs text-on-surface-variant">Select one or multiple services for the walk-in customer.</p>
                             <div class="mt-sm max-h-72 space-y-xs overflow-y-auto border border-outline-variant bg-white p-sm">
                                 @foreach($services as $service)
-                                    <label class="flex items-start gap-sm border border-outline-variant bg-surface-container-low p-sm">
+                                    @php
+                                        $isWashingPackage = ($service->main_category === 'washing' && $service->selection_mode === 0);
+                                    @endphp
+                                    <label class="service-card flex items-start gap-sm border border-outline-variant bg-surface-container-low p-sm cursor-pointer transition-colors duration-200">
                                         <input
                                             type="checkbox"
                                             name="service_ids[]"
                                             value="{{ $service->id }}"
                                             @checked(in_array($service->id, old('service_ids', [])))
-                                            class="mt-0.5"
+                                            class="service-checkbox mt-0.5 {{ $isWashingPackage ? 'washing-package-checkbox' : '' }}"
                                         >
                                         <span class="flex-1">
                                             <span class="block text-sm font-bold text-primary">{{ $service->name }}</span>
@@ -114,6 +117,11 @@
                                                     • {{ $service->sub_category }}
                                                 @endif
                                             </span>
+                                            @if(!empty($service->inclusions))
+                                                <span class="block text-[11px] text-outline mt-xs leading-tight italic">
+                                                    Includes: {{ $service->inclusions }}
+                                                </span>
+                                            @endif
                                         </span>
                                         <span class="text-sm font-bold text-secondary">${{ number_format((float) $service->price, 2) }}</span>
                                     </label>
@@ -132,6 +140,20 @@
                                 <option value="repair" @selected(old('status') === 'repair')>Repair</option>
                             </select>
                         </div>
+                        <div>
+                            <label class="block font-label-sm uppercase tracking-widest text-outline">Assign Mechanic</label>
+                            <select
+                                name="mechanic_id"
+                                class="mt-xs w-full border border-outline-variant bg-white px-sm py-sm"
+                            >
+                                <option value="">Unassigned</option>
+                                @foreach($mechanics as $mechanic)
+                                    <option value="{{ $mechanic->id }}" @selected((string) old('mechanic_id') === (string) $mechanic->id)>
+                                        {{ $mechanic->name }}@if($mechanic->specialization) • {{ $mechanic->specialization }}@endif
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
 
                     <div class="space-y-sm">
@@ -142,7 +164,6 @@
                                 type="date"
                                 name="booking_date"
                                 value="{{ old('booking_date', $defaultDate->toDateString()) }}"
-                                min="{{ now()->toDateString() }}"
                                 class="mt-xs w-full border border-outline-variant bg-white px-sm py-sm"
                                 required
                             >
@@ -207,3 +228,43 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.service-checkbox');
+    
+    function updateStyles() {
+        checkboxes.forEach(cb => {
+            const label = cb.closest('.service-card');
+            if (label) {
+                if (cb.checked) {
+                    label.classList.remove('border-outline-variant', 'bg-surface-container-low');
+                    label.classList.add('border-secondary', 'bg-secondary/5');
+                } else {
+                    label.classList.remove('border-secondary', 'bg-secondary/5');
+                    label.classList.add('border-outline-variant', 'bg-surface-container-low');
+                }
+            }
+        });
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            if (this.classList.contains('washing-package-checkbox') && this.checked) {
+                // Uncheck all other washing package checkboxes
+                checkboxes.forEach(other => {
+                    if (other !== this && other.classList.contains('washing-package-checkbox')) {
+                        other.checked = false;
+                    }
+                });
+            }
+            updateStyles();
+        });
+    });
+
+    // Run on initial load to support old inputs or pre-selected services
+    updateStyles();
+});
+</script>
+@endpush

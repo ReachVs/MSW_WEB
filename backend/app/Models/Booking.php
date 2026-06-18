@@ -102,6 +102,106 @@ class Booking extends Model
         ];
     }
 
+    public function getCategoryKey(): ?string
+    {
+        $selectedServices = $this->selected_services ?? [];
+        if (! is_array($selectedServices)) {
+            $selectedServices = [];
+        }
+
+        // 1. Try explicit category
+        foreach ($selectedServices as $service) {
+            $category = $service['category'] ?? $service['main_category'] ?? null;
+            if ($category) {
+                return $category;
+            }
+        }
+
+        // 2. Fallback to matching keywords in names/descriptions
+        $texts = [];
+        foreach ($selectedServices as $service) {
+            $texts[] = ($service['name'] ?? '').' '.($service['description'] ?? '');
+        }
+        if (empty($texts) && $this->service_name) {
+            $texts[] = $this->service_name.' '.($this->notes ?? '');
+        }
+
+        $allNames = strtolower(implode(' ', $texts));
+
+        if (str_contains($allNames, 'wash') || str_contains($allNames, 'clean') || str_contains($allNames, 'detail')) {
+            return 'washing';
+        }
+        if (
+            str_contains($allNames, 'engine') ||
+            str_contains($allNames, 'oil') ||
+            str_contains($allNames, 'checkup') ||
+            str_contains($allNames, 'spark') ||
+            str_contains($allNames, 'fluid') ||
+            str_contains($allNames, 'filter')
+        ) {
+            return 'engine_checkup';
+        }
+        if (
+            str_contains($allNames, 'tun') ||
+            str_contains($allNames, 'performance') ||
+            str_contains($allNames, 'speed') ||
+            str_contains($allNames, 'ecu') ||
+            str_contains($allNames, 'dyno') ||
+            str_contains($allNames, '1000cc') ||
+            str_contains($allNames, '600cc') ||
+            str_contains($allNames, '200cc') ||
+            str_contains($allNames, '400cc') ||
+            str_contains($allNames, 'class') ||
+            str_contains($allNames, 'above')
+        ) {
+            return 'tuning';
+        }
+        if (
+            str_contains($allNames, 'mainten') ||
+            str_contains($allNames, 'repair') ||
+            str_contains($allNames, 'inspect') ||
+            str_contains($allNames, 'brake') ||
+            str_contains($allNames, 'tire')
+        ) {
+            return 'maintenance';
+        }
+
+        return null;
+    }
+
+    public function getCategoryDetails(): ?array
+    {
+        $key = $this->getCategoryKey();
+        if (! $key) {
+            return null;
+        }
+
+        $details = [
+            'maintenance' => [
+                'label' => 'Maintenance Services',
+                'icon' => 'build',
+                'image' => '/mechanic-chain.png',
+            ],
+            'washing' => [
+                'label' => 'Washing Services',
+                'icon' => 'wash',
+                'image' => '/motorcycle-wash.png',
+            ],
+            'engine_checkup' => [
+                'label' => 'Engine Check Up',
+                'icon' => 'monitor_heart',
+                'image' => '/mechanic-diagnostic.png',
+            ],
+            'tuning' => [
+                'label' => 'Tuning Performance',
+                'icon' => 'speed',
+                'image' => '/dyno-tuning.jpg',
+            ],
+        ];
+
+        return $details[$key] ?? null;
+    }
+
     public function canBeCancelledByCustomer(): bool
     {
         return in_array($this->status, self::CUSTOMER_CANCELLABLE_STATUSES, true);

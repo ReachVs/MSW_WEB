@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Booking;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreBookingRequest extends FormRequest
 {
@@ -18,11 +19,11 @@ class StoreBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'service_name' => ['required', 'string', 'max:255'],
-            'service_id' => ['nullable', 'integer'],
+            'service_name' => ['nullable', 'string', 'max:255'],
+            'service_id' => ['nullable', 'integer', 'exists:services,id'],
             'selected_services' => ['nullable', 'array'],
-            'selected_services.*.id' => ['nullable', 'integer'],
-            'selected_services.*.name' => ['required_with:selected_services', 'string', 'max:255'],
+            'selected_services.*.id' => ['required_with:selected_services', 'integer', 'exists:services,id'],
+            'selected_services.*.name' => ['nullable', 'string', 'max:255'],
             'selected_services.*.price' => ['nullable', 'numeric', 'min:0'],
             'total_amount' => ['nullable', 'numeric', 'min:0'],
             'bike_name' => ['required', 'string', 'max:255'],
@@ -36,5 +37,21 @@ class StoreBookingRequest extends FormRequest
             'status' => ['nullable', 'string', 'in:'.implode(',', Booking::statuses())],
             'notes' => ['nullable', 'string', 'max:2000'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            $selectedServices = collect($this->input('selected_services', []))
+                ->pluck('id')
+                ->filter();
+
+            if ($selectedServices->isEmpty() && ! $this->filled('service_id')) {
+                $validator->errors()->add(
+                    'selected_services',
+                    'Please select at least one valid service.'
+                );
+            }
+        });
     }
 }

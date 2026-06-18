@@ -18,13 +18,13 @@ class WorkshopCalendar
     /**
      * @return Collection<int, array{time:string,label:string,starts_at:CarbonImmutable,remaining_capacity:int,is_available:bool}>
      */
-    public static function availableSlotsForDate(Carbon|string $date): Collection
+    public static function availableSlotsForDate(Carbon|string $date, bool $allowPast = false): Collection
     {
         $settings = self::settings();
         $selectedDate = $date instanceof Carbon ? $date->copy()->startOfDay() : Carbon::parse($date)->startOfDay();
         $today = now()->startOfDay();
 
-        if ($selectedDate->lt($today)) {
+        if (! $allowPast && $selectedDate->lt($today)) {
             return collect();
         }
 
@@ -36,7 +36,8 @@ class WorkshopCalendar
         return self::slotDateTimes($selectedDate)->map(function (CarbonImmutable $slotStart) use (
             $bookingsBySlot,
             $settings,
-            $dailyRemaining
+            $dailyRemaining,
+            $allowPast
         ): array {
             $slotKey = $slotStart->format('H:i');
             $slotCount = $bookingsBySlot->get($slotKey, collect())->count();
@@ -44,7 +45,7 @@ class WorkshopCalendar
                 max($settings->max_per_slot - $slotCount, 0),
                 $dailyRemaining,
             );
-            $isAvailable = $remainingCapacity > 0 && $slotStart->greaterThan(now());
+            $isAvailable = $remainingCapacity > 0 && ($allowPast || $slotStart->greaterThan(now()));
 
             return [
                 'time' => $slotStart->format('H:i'),
@@ -79,10 +80,10 @@ class WorkshopCalendar
         return $slots;
     }
 
-    public static function isSlotAvailable(Carbon|string $dateTime): bool
+    public static function isSlotAvailable(Carbon|string $dateTime, bool $allowPast = false): bool
     {
         $slotDateTime = $dateTime instanceof Carbon ? $dateTime->copy() : Carbon::parse($dateTime);
-        $slot = self::availableSlotsForDate($slotDateTime->copy()->startOfDay())
+        $slot = self::availableSlotsForDate($slotDateTime->copy()->startOfDay(), $allowPast)
             ->firstWhere('time', $slotDateTime->format('H:i'));
 
         return (bool) ($slot['is_available'] ?? false);
@@ -115,31 +116,46 @@ class WorkshopCalendar
     /**
      * @return Collection<int, array{date:string,booking_count:int,is_full:bool,is_past:bool}>
      */
-    public static function monthAvailability(Carbon|string $month): Collection
-    {
+    public static function monthAvailability(
+        Carbon|string $month,
+        bool $includeCancelledInCount = false,
+    ): Collection {
         $settings = self::settings();
         $baseDate = $month instanceof Carbon ? $month->copy()->startOfMonth() : Carbon::parse($month)->startOfMonth();
         $start = $baseDate->copy()->startOfMonth();
         $end = $baseDate->copy()->endOfMonth();
-        $counts = Booking::query()
+        $countQuery = Booking::query()
             ->selectRaw('DATE(starts_at) as booking_day, COUNT(*) as booking_count')
             ->whereBetween('starts_at', [$start, $end])
-            ->whereNotIn('status', [Booking::STATUS_CANCELLED])
+            ->when(
+                ! $includeCancelledInCount,
+                fn ($query) => $query->whereNotIn('status', [Booking::STATUS_CANCELLED]),
+            )
             ->groupBy('booking_day')
             ->pluck('booking_count', 'booking_day');
+        $activeCounts = $includeCancelledInCount
+            ? Booking::query()
+                ->selectRaw('DATE(starts_at) as booking_day, COUNT(*) as booking_count')
+                ->whereBetween('starts_at', [$start, $end])
+                ->whereNotIn('status', [Booking::STATUS_CANCELLED])
+                ->groupBy('booking_day')
+                ->pluck('booking_count', 'booking_day')
+            : $countQuery;
 
         return collect(range(1, $baseDate->daysInMonth))->map(function (int $day) use (
             $baseDate,
-            $counts,
+            $countQuery,
+            $activeCounts,
             $settings
         ): array {
             $date = $baseDate->copy()->day($day);
-            $count = (int) ($counts[$date->toDateString()] ?? 0);
+            $count = (int) ($countQuery[$date->toDateString()] ?? 0);
+            $activeCount = (int) ($activeCounts[$date->toDateString()] ?? 0);
 
             return [
                 'date' => $date->toDateString(),
                 'booking_count' => $count,
-                'is_full' => $count >= $settings->max_daily_bookings,
+                'is_full' => $activeCount >= $settings->max_daily_bookings,
                 'is_past' => $date->lt(now()->startOfDay()),
             ];
         });

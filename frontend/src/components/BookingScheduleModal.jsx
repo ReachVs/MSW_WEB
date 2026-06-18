@@ -27,7 +27,11 @@ function endOfCalendar(date) {
 }
 
 function formatDateKey(date) {
-  return date.toISOString().slice(0, 10)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
 }
 
 function formatReadableDate(date) {
@@ -47,6 +51,7 @@ export default function BookingScheduleModal({
   isOpen,
   onClose,
   onConfirm,
+  onBack,
   bikeInfo,
   selectedServices,
   totalAmount,
@@ -82,6 +87,7 @@ export default function BookingScheduleModal({
 
     const fetchMonth = async () => {
       setLoadingMonth(true)
+      setError(null)
       try {
         const month = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`
         const response = await fetch(
@@ -112,6 +118,7 @@ export default function BookingScheduleModal({
     const fetchSlots = async () => {
       setLoadingSlots(true)
       setSelectedSlot(null)
+      setError(null)
       try {
         const response = await fetch(
           `http://localhost:8080/api/calendar/available-slots?date=${formatDateKey(selectedDate)}`,
@@ -152,8 +159,8 @@ export default function BookingScheduleModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-md animate-fadeIn">
-      <div className="max-h-[92vh] w-full max-w-6xl overflow-hidden border border-outline-variant bg-surface-container-lowest shadow-xl">
-        <div className="border-b border-outline-variant p-lg">
+      <div className="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden border border-outline-variant bg-surface-container-lowest shadow-xl">
+        <div className="shrink-0 border-b border-outline-variant p-lg">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <h2 className="font-headline-md text-lg font-bold uppercase tracking-tight text-primary">
@@ -178,8 +185,8 @@ export default function BookingScheduleModal({
           </div>
         </div>
 
-        <div className="grid max-h-[calc(92vh-170px)] grid-cols-1 overflow-y-auto lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="border-r border-outline-variant p-lg">
+        <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="border-r border-outline-variant overflow-y-auto p-lg">
             <div className="mb-md flex items-center justify-between">
               <button
                 type="button"
@@ -281,7 +288,7 @@ export default function BookingScheduleModal({
             )}
           </div>
 
-          <div className="space-y-md p-lg">
+          <div className="overflow-y-auto space-y-md p-lg">
             <div>
               <p className="text-xs font-label-sm uppercase tracking-widest text-outline">
                 Selected Date
@@ -368,22 +375,31 @@ export default function BookingScheduleModal({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-outline-variant p-lg">
+        <div className="shrink-0 flex justify-between items-center border-t border-outline-variant p-lg">
           <button
             type="button"
-            onClick={onClose}
-            className="border border-outline-variant px-lg py-md text-xs font-label-sm uppercase tracking-widest hover:bg-surface-container-low"
+            onClick={onBack}
+            className="border border-outline-variant px-lg py-md text-xs font-label-sm uppercase tracking-widest hover:bg-surface-container-low active:scale-[0.98]"
           >
-            Cancel
+            Back to Services
           </button>
-          <button
-            type="button"
-            onClick={handleConfirm}
-            disabled={!selectedSlot}
-            className="bg-primary px-lg py-md text-xs font-label-sm uppercase tracking-widest text-on-primary hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Continue
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="border border-outline-variant px-lg py-md text-xs font-label-sm uppercase tracking-widest hover:bg-surface-container-low active:scale-[0.98]"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirm}
+              disabled={!selectedSlot}
+              className="bg-primary px-lg py-md text-xs font-label-sm uppercase tracking-widest text-on-primary hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
+            >
+              Continue
+            </button>
+          </div>
         </div>
       </div>
     </div>

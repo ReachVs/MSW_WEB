@@ -2,6 +2,11 @@
 @section('title', 'Dashboard')
 @php
     $page = 'dashboard';
+    $statusRouteName = $statusRouteName ?? 'admin.bookings.status';
+    $mechanicRouteName = $mechanicRouteName ?? 'admin.bookings.mechanic';
+    $queueRouteName = $queueRouteName ?? 'admin.queue';
+    $canAssignMechanic = $canAssignMechanic ?? true;
+    $canUpdateStatus = $canUpdateStatus ?? true;
     $statusLabels = [
         \App\Models\Booking::STATUS_PENDING => 'Pending',
         \App\Models\Booking::STATUS_CONFIRMED => 'Confirmed',
@@ -19,6 +24,12 @@
         \App\Models\Booking::STATUS_READY_PICKUP => 'bg-[#10B981] text-white border-[#10B981]',
         \App\Models\Booking::STATUS_COMPLETED => 'bg-[#059669] text-white border-[#059669]',
         \App\Models\Booking::STATUS_CANCELLED => 'bg-[#EF4444] text-white border-[#EF4444]',
+    ];
+    $categoryColors = [
+        'washing' => 'border-green-600/30 bg-green-600/10 text-green-600',
+        'tuning' => 'border-yellow-600/30 bg-yellow-600/10 text-yellow-600',
+        'engine_checkup' => 'border-red-600/30 bg-red-600/10 text-red-600',
+        'maintenance' => 'border-blue-600/30 bg-blue-600/10 text-blue-600',
     ];
 @endphp
 
@@ -58,11 +69,21 @@
             @forelse($workshopCards as $booking)
                 <div class="bg-surface-container-lowest border border-outline-variant group hover:border-primary transition-all bg-surface-container-low">
                     <div class="p-md space-y-sm">
-                        <div class="mb-xs flex items-center justify-between gap-sm">
+                        <div class="mb-xs flex flex-wrap items-center gap-sm">
                             <span class="rounded border border-outline-variant bg-white px-sm py-0.5 text-[10px] font-label-sm uppercase tracking-widest text-primary">
                                 {{ $booking->user_id ? 'Booking' : 'Walk In' }}
                             </span>
-                            <span class="font-label-sm text-[10px] uppercase tracking-widest px-2 py-0.5 border rounded {{ $statusTagClasses[$booking->status] ?? 'bg-surface-container-high text-primary border-outline-variant' }}">
+                            @if($booking->getCategoryKey())
+                                @php
+                                    $catDetails = $booking->getCategoryDetails();
+                                    $colorClass = $categoryColors[$booking->getCategoryKey()] ?? 'border-outline-variant bg-surface-container-high text-primary';
+                                @endphp
+                                <span class="rounded border px-sm py-0.5 text-[10px] font-label-sm uppercase tracking-widest inline-flex items-center gap-xs {{ $colorClass }}">
+                                    <span class="material-symbols-outlined text-[12px]">{{ $catDetails['icon'] }}</span>
+                                    {{ $catDetails['label'] }}
+                                </span>
+                            @endif
+                            <span class="ml-auto font-label-sm text-[10px] uppercase tracking-widest px-2 py-0.5 border rounded {{ $statusTagClasses[$booking->status] ?? 'bg-surface-container-high text-primary border-outline-variant' }}">
                                 {{ $statusLabels[$booking->status] ?? ucfirst(str_replace('_', ' ', $booking->status)) }}
                             </span>
                         </div>
@@ -88,8 +109,14 @@
                             <p class="mt-xs text-sm text-on-surface-variant">{{ $booking->service_name }}</p>
                         </div>
                         <div class="mt-md grid grid-cols-1 gap-sm">
-                            @if(count($booking->allowedNextStatuses()) > 0)
-                                <form method="POST" action="{{ route('admin.bookings.status', $booking) }}" class="flex gap-sm">
+                            @include('admin.partials.mechanic-assignment', [
+                                'booking' => $booking,
+                                'mechanics' => $mechanics,
+                                'mechanicRouteName' => $mechanicRouteName,
+                                'canAssignMechanic' => $canAssignMechanic,
+                            ])
+                            @if($canUpdateStatus && count($booking->allowedNextStatuses()) > 0)
+                                <form method="POST" action="{{ route($statusRouteName, $booking) }}" class="flex gap-sm">
                                     @csrf
                                     @method('PATCH')
                                     <select name="status" class="flex-1 border border-outline-variant bg-white px-sm py-xs font-label-sm text-[10px] uppercase tracking-widest">
@@ -112,7 +139,7 @@
                                     {{ $booking->notes ?: 'No customer description submitted.' }}
                                 </div>
                             </details>
-                            <a href="{{ route('admin.queue') }}" class="border border-outline-variant py-xs text-center font-label-sm text-[10px] uppercase tracking-widest hover:bg-surface-container-high transition-colors">
+                            <a href="{{ route($queueRouteName) }}" class="border border-outline-variant py-xs text-center font-label-sm text-[10px] uppercase tracking-widest hover:bg-surface-container-high transition-colors">
                                 Open Queue
                             </a>
                         </div>
@@ -152,11 +179,23 @@
         <div class="flex gap-gutter min-w-[1200px]">
             @forelse($todayBookings as $appt)
             <div class="w-80 bg-surface-container-low border border-outline-variant p-md flex flex-col gap-sm hover:border-primary transition-colors duration-200">
-                <div class="flex justify-between items-center border-b border-outline-variant pb-xs mb-xs">
+                <div class="flex flex-wrap items-center justify-between gap-xs border-b border-outline-variant pb-xs mb-xs">
                     <span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest">{{ $appt->starts_at->format('h:i A') }}</span>
-                    <span class="rounded border border-outline-variant bg-white px-sm py-0.5 text-[10px] font-label-sm uppercase tracking-widest text-primary">
-                        {{ $appt->user_id ? 'Booking' : 'Walk In' }}
-                    </span>
+                    <div class="flex items-center gap-xs">
+                        @if($appt->getCategoryKey())
+                            @php
+                                $catDetails = $appt->getCategoryDetails();
+                                $colorClass = $categoryColors[$appt->getCategoryKey()] ?? 'border-outline-variant bg-surface-container-high text-primary';
+                            @endphp
+                            <span class="rounded border px-sm py-0.5 text-[9px] font-label-sm uppercase tracking-widest inline-flex items-center gap-xs {{ $colorClass }}">
+                                <span class="material-symbols-outlined text-[10px]">{{ $catDetails['icon'] }}</span>
+                                {{ $catDetails['label'] }}
+                            </span>
+                        @endif
+                        <span class="rounded border border-outline-variant bg-white px-sm py-0.5 text-[9px] font-label-sm uppercase tracking-widest text-primary">
+                            {{ $appt->user_id ? 'Booking' : 'Walk In' }}
+                        </span>
+                    </div>
                 </div>
                 <div>
                     <h4 class="font-headline-sm text-lg font-bold uppercase text-primary">{{ $appt->customer_name }}</h4>
@@ -178,5 +217,29 @@
 @endsection
 
 @push('scripts')
-{{-- Removed the problematic JavaScript that animated mock progress bars --}}
+<script>
+    (() => {
+        const refreshIntervalMs = 15000;
+
+        const hasActiveFormInteraction = () => {
+            const activeElement = document.activeElement;
+
+            if (!activeElement) {
+                return false;
+            }
+
+            return ['INPUT', 'SELECT', 'TEXTAREA'].includes(activeElement.tagName);
+        };
+
+        const shouldRefreshDashboard = () => {
+            return document.visibilityState === 'visible' && !hasActiveFormInteraction();
+        };
+
+        setInterval(() => {
+            if (shouldRefreshDashboard()) {
+                window.location.reload();
+            }
+        }, refreshIntervalMs);
+    })();
+</script>
 @endpush

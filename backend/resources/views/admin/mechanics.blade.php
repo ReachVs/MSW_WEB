@@ -219,6 +219,13 @@
                                     Update Mechanic
                                 </button>
                             </form>
+                            <form method="POST" action="{{ route('admin.mechanics.destroy', $mechanic) }}" class="mt-xs p-sm pt-0" onsubmit="return confirm('Are you sure you want to delete this mechanic? This will unassign them from all their bookings.');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="w-full border border-error bg-white px-md py-sm font-label-sm uppercase tracking-widest text-error hover:bg-error hover:text-white transition-colors">
+                                    Delete Mechanic
+                                </button>
+                            </form>
                         </details>
                     @endif
                 </div>

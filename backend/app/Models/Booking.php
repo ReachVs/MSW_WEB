@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\InventoryIntegrator;
 use Database\Factories\BookingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +13,15 @@ class Booking extends Model
 {
     /** @use HasFactory<BookingFactory> */
     use HasFactory;
+
+    protected static function booted()
+    {
+        static::updated(function (Booking $booking) {
+            if ($booking->wasChanged('status') && $booking->status === self::STATUS_COMPLETED) {
+                InventoryIntegrator::deductForBooking($booking);
+            }
+        });
+    }
 
     public const STATUS_PENDING = 'pending';
 

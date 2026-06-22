@@ -90,6 +90,15 @@ class AdminMechanicController extends Controller
         return back()->with('status_success', 'Mechanic details updated successfully.');
     }
 
+    public function destroy(Request $request, Mechanic $mechanic): RedirectResponse
+    {
+        $this->ensureAdmin($request);
+
+        $mechanic->delete();
+
+        return back()->with('status_success', 'Mechanic deleted successfully.');
+    }
+
     private function ensureAdmin(Request $request): void
     {
         abort_unless($request->user()?->hasRole('admin'), 403);

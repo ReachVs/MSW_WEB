@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\MechanicStatus;
 use App\Models\Booking;
+use App\Models\Category;
+use App\Models\InventoryPart;
 use App\Models\Mechanic;
+use App\Models\StockMovement;
 use App\Support\WorkshopCalendar;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -250,11 +253,116 @@ class MechanicPortalController extends Controller
         return [
             'portalRoutePrefix' => 'mechanic',
             'portalTitle' => 'MECHANIC',
-            'showInventoryNav' => false,
+            'showInventoryNav' => true,
             'showMechanicsNav' => true,
             'showLogout' => false,
             'compactSidebar' => true,
         ];
+    }
+
+    // ─── Inventory (Read-Only) ───────────────────────────────────────────
+
+    public function inventory(Request $request)
+    {
+        $categories = Category::withCount('parts')->get();
+
+        // Dashboard Mode
+        if (! $request->filled('search') && ! $request->filled('category') && ! $request->filled('category_id')) {
+            $totalParts = InventoryPart::count();
+            $lowStockParts = InventoryPart::whereColumn('stock_qty', '<=', 'minimum_stock')->count();
+            $outOfStockParts = InventoryPart::where('stock_qty', 0)->count();
+            $totalValuation = (int) (InventoryPart::query()->selectRaw('SUM(stock_qty * unit_price_cents) as total')->value('total') ?? 0);
+
+            $kpi = [
+                'totalParts' => $totalParts,
+                'lowStockParts' => $lowStockParts,
+                'outOfStockParts' => $outOfStockParts,
+                'totalValuation' => $totalValuation,
+            ];
+
+            $criticalParts = InventoryPart::with('category')
+                ->whereColumn('stock_qty', '<=', 'minimum_stock')
+                ->orderBy('stock_qty')
+                ->get();
+
+            return $this->renderInventoryView($request, 'admin.inventory', [
+                'mode' => 'dashboard',
+                'kpi' => $kpi,
+                'categories' => $categories,
+                'criticalParts' => $criticalParts,
+            ]);
+        }
+
+        // Parts List Mode
+        $query = InventoryPart::with('category');
+        $selectedCategory = null;
+
+        if ($request->filled('category_id')) {
+            $selectedCategory = Category::find($request->input('category_id'));
+            if ($selectedCategory) {
+                $query->where('category_id', $selectedCategory->id);
+            }
+        } elseif ($request->filled('category')) {
+            $categoryName = $request->input('category');
+            $selectedCategory = Category::where('name', $categoryName)->first();
+            if ($selectedCategory) {
+                $query->where('category_id', $selectedCategory->id);
+            }
+        }
+
+        if ($request->filled('search')) {
+            $searchTerm = $request->input('search');
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%")
+                    ->orWhere('sku', 'like', "%{$searchTerm}%")
+                    ->orWhereHas('category', function ($catQuery) use ($searchTerm) {
+                        $catQuery->where('name', 'like', "%{$searchTerm}%");
+                    });
+            });
+        }
+
+        $parts = $query->paginate(15)->withQueryString();
+
+        return $this->renderInventoryView($request, 'admin.inventory', [
+            'mode' => 'parts_list',
+            'parts' => $parts,
+            'categories' => $categories,
+            'selectedCategory' => $selectedCategory,
+        ]);
+    }
+
+    public function inventoryShow(Request $request, InventoryPart $part)
+    {
+        $part->load(['category', 'movements.creator']);
+        $categories = Category::all();
+
+        return $this->renderInventoryView($request, 'admin.inventory', [
+            'mode' => 'part_details',
+            'part' => $part,
+            'categories' => $categories,
+        ]);
+    }
+
+    public function inventoryLogs(Request $request)
+    {
+        $logs = StockMovement::with(['part.category', 'creator'])
+            ->latest()
+            ->paginate(25);
+
+        return $this->renderInventoryView($request, 'admin.inventory-logs', compact('logs'));
+    }
+
+    private function renderInventoryView(Request $request, string $view, array $data)
+    {
+        $data = array_merge($data, $this->sharedViewData(), [
+            'canManageInventory' => false,
+        ]);
+
+        if ($request->ajax()) {
+            return view($view, $data)->fragment('content');
+        }
+
+        return view($view, $data);
     }
 
     private function mechanicsList()

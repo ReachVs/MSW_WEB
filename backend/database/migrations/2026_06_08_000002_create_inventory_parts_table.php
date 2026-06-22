@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->string('sku')->unique();
             $table->enum('category', ['Brakes', 'Engine', 'Drivetrain', 'Suspension', 'Electrical', 'Other'])->default('Other');
-            $table->unsignedTinyInteger('stock_pct')->default(100)->comment('0-100 percentage of stock remaining');
+            $table->unsignedInteger('stock_qty')->default(0)->comment('Remaining units in stock');
             $table->unsignedInteger('unit_price_cents');
             $table->timestamps();
         });

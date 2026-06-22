@@ -29,9 +29,19 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::get('/queue', [AdminQueueController::class, 'index'])->name('queue');
         Route::get('/queue/sync', [AdminQueueController::class, 'sync'])->name('queue.sync');
         Route::get('/inventory', [AdminInventoryController::class, 'index'])->name('inventory');
+        Route::get('/inventory/logs', [AdminInventoryController::class, 'logs'])->name('inventory.logs');
+        Route::get('/inventory/parts/{part}', [AdminInventoryController::class, 'show'])->name('inventory.show');
+        Route::post('/inventory', [AdminInventoryController::class, 'store'])->name('inventory.store');
+        Route::patch('/inventory/{part}', [AdminInventoryController::class, 'update'])->name('inventory.update');
+        Route::delete('/inventory/{part}', [AdminInventoryController::class, 'destroy'])->name('inventory.destroy');
+        Route::post('/inventory/parts/{part}/stock-in', [AdminInventoryController::class, 'stockIn'])->name('inventory.stock-in');
+        Route::post('/inventory/parts/{part}/stock-out', [AdminInventoryController::class, 'stockOut'])->name('inventory.stock-out');
+        Route::post('/inventory/parts/{part}/adjust', [AdminInventoryController::class, 'adjust'])->name('inventory.adjust');
+
         Route::get('/mechanics', [AdminMechanicController::class, 'index'])->name('mechanics');
         Route::post('/mechanics', [AdminMechanicController::class, 'store'])->name('mechanics.store');
         Route::patch('/mechanics/{mechanic}', [AdminMechanicController::class, 'update'])->name('mechanics.update');
+        Route::delete('/mechanics/{mechanic}', [AdminMechanicController::class, 'destroy'])->name('mechanics.destroy');
         Route::get('/bookings/create', [AdminBookingController::class, 'create'])
             ->name('bookings.create');
         Route::post('/bookings', [AdminBookingController::class, 'store'])
@@ -51,6 +61,9 @@ Route::prefix('mechanic')->name('mechanic.')->group(function (): void {
     Route::get('/queue', [MechanicPortalController::class, 'queue'])->name('queue');
     Route::get('/queue/sync', [MechanicPortalController::class, 'queueSync'])->name('queue.sync');
     Route::get('/mechanics', [MechanicPortalController::class, 'mechanics'])->name('mechanics');
+    Route::get('/inventory', [MechanicPortalController::class, 'inventory'])->name('inventory');
+    Route::get('/inventory/logs', [MechanicPortalController::class, 'inventoryLogs'])->name('inventory.logs');
+    Route::get('/inventory/parts/{part}', [MechanicPortalController::class, 'inventoryShow'])->name('inventory.show');
     Route::patch('/bookings/{booking}/status', [MechanicPortalController::class, 'updateStatus'])
         ->name('bookings.status');
     Route::patch('/bookings/{booking}/mechanic', [MechanicPortalController::class, 'updateMechanic'])

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Events\BookingCreated;
 use App\Models\Booking;
+use App\Models\Mechanic;
 use App\Models\Service;
 use App\Models\User;
 use App\Models\WorkshopSetting;
@@ -378,6 +379,167 @@ class BookingApiTest extends TestCase
             'status' => Booking::STATUS_CONFIRMED,
             'starts_at' => $startsAt->toDateTimeString(),
         ]);
+    }
+
+    public function test_admin_can_delete_mechanic(): void
+    {
+        $adminRole = Role::findOrCreate('admin');
+        $admin = User::factory()->create();
+        $admin->assignRole($adminRole);
+
+        $this->actingAs($admin);
+
+        $mechanic = Mechanic::create([
+            'name' => 'Delete Test Mechanic',
+            'specialization' => 'Tuning',
+            'status' => 'available',
+        ]);
+
+        $booking = Booking::factory()->create([
+            'mechanic_id' => $mechanic->id,
+            'status' => Booking::STATUS_CONFIRMED,
+        ]);
+
+        $response = $this->delete("/admin/mechanics/{$mechanic->id}");
+
+        $response->assertRedirect();
+        $this->assertDatabaseMissing('mechanics', ['id' => $mechanic->id]);
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'mechanic_id' => null,
+        ]);
+    }
+
+    public function test_non_admin_cannot_delete_mechanic(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $mechanic = Mechanic::create([
+            'name' => 'Secure Test Mechanic',
+            'specialization' => 'Tuning',
+            'status' => 'available',
+        ]);
+
+        $response = $this->delete("/admin/mechanics/{$mechanic->id}");
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('mechanics', ['id' => $mechanic->id]);
+    }
+
+    public function test_complete_lifecycle_customer_to_admin_to_mechanic_flow(): void
+    {
+        // 1. Customer registers / authenticates, chooses services and books a slot.
+        $customer = User::factory()->create();
+        $adminRole = Role::findOrCreate('admin');
+        $admin = User::factory()->create();
+        $admin->assignRole($adminRole);
+
+        $service = $this->createService([
+            'price' => 100.00,
+        ]);
+
+        $mechanic = Mechanic::create([
+            'name' => 'Marcus Rivera',
+            'specialization' => 'Washing',
+            'status' => 'available',
+        ]);
+
+        Sanctum::actingAs($customer);
+
+        $startsAt = now()->addDays(2)->startOfDay()->setTime(10, 0);
+        $endsAt = $startsAt->copy()->addHour();
+
+        $response = $this->postJson('/api/bookings', [
+            'bike_name' => 'Ducati',
+            'model' => 'Monster 821',
+            'plate_number' => 'TST-8888',
+            'engine_capacity' => '821',
+            'service_id' => $service->id,
+            'service_name' => $service->name,
+            'selected_services' => [
+                ['id' => $service->id],
+            ],
+            'starts_at' => $startsAt->toISOString(),
+            'ends_at' => $endsAt->toISOString(),
+            'customer_name' => 'Deep Tester',
+            'customer_email' => 'deep.tester@example.com',
+        ]);
+
+        $response->assertCreated();
+        $bookingId = $response->json('data.id');
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $bookingId,
+            'status' => Booking::STATUS_PENDING,
+        ]);
+
+        // 2. Admin logs in, views the pending booking, assigns a mechanic and confirms it.
+        Sanctum::actingAs($admin);
+
+        // Verify admin can see it in admin booking list
+        $this->getJson('/api/admin/bookings')
+            ->assertOk()
+            ->assertJsonFragment(['id' => $bookingId, 'status' => Booking::STATUS_PENDING]);
+
+        // Assign mechanic
+        $this->actingAs($admin)->patch(route('admin.bookings.mechanic', $bookingId), [
+            'mechanic_id' => $mechanic->id,
+        ])->assertRedirect();
+
+        // Confirm booking
+        $this->actingAs($admin)->patch(route('admin.bookings.status', $bookingId), [
+            'status' => Booking::STATUS_CONFIRMED,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $bookingId,
+            'status' => Booking::STATUS_CONFIRMED,
+            'mechanic_id' => $mechanic->id,
+        ]);
+
+        // 3. Mechanic accesses the mechanic queue/portal and updates status to 'repair'.
+        $this->patch(route('mechanic.bookings.status', $bookingId), [
+            'status' => Booking::STATUS_REPAIR,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $bookingId,
+            'status' => Booking::STATUS_REPAIR,
+        ]);
+
+        // Mechanic advances to 'ready_pickup'
+        $this->patch(route('mechanic.bookings.status', $bookingId), [
+            'status' => Booking::STATUS_READY_PICKUP,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $bookingId,
+            'status' => Booking::STATUS_READY_PICKUP,
+        ]);
+
+        // 4. Admin completes the booking
+        $this->actingAs($admin)->patch(route('admin.bookings.status', $bookingId), [
+            'status' => Booking::STATUS_COMPLETED,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $bookingId,
+            'status' => Booking::STATUS_COMPLETED,
+        ]);
+
+        // 5. Customer checks active and history bookings
+        Sanctum::actingAs($customer);
+
+        // Active bookings should NOT contain this completed booking
+        $this->getJson('/api/bookings/active')
+            ->assertOk()
+            ->assertJsonMissing([['id' => $bookingId]]);
+
+        // History bookings SHOULD contain this completed booking
+        $this->getJson('/api/bookings/history')
+            ->assertOk()
+            ->assertJsonFragment(['id' => $bookingId, 'status' => Booking::STATUS_COMPLETED]);
     }
 
     /**

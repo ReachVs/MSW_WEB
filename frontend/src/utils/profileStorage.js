@@ -1,18 +1,27 @@
 const PROFILE_STORAGE_KEY = 'msw-profile'
 
 const DEFAULT_PROFILE = {
-  firstName: 'Dominic',
-  lastName: 'Turner',
-  email: 'dominic.turner@madape.com',
-  phone: '+1 (555) 123-4567',
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
   joinDate: '2024-06-15',
   avatar: null,
 }
 
-export function getStoredProfile() {
+export function getStoredProfile(email = null) {
   try {
-    const raw = localStorage.getItem(PROFILE_STORAGE_KEY)
-    if (!raw) return DEFAULT_PROFILE
+    const userEmail = email || localStorage.getItem('activeUserEmail')
+    const key = userEmail
+      ? `${PROFILE_STORAGE_KEY}-${userEmail}`
+      : PROFILE_STORAGE_KEY
+    const raw = localStorage.getItem(key)
+    if (!raw) {
+      return {
+        ...DEFAULT_PROFILE,
+        email: userEmail || DEFAULT_PROFILE.email,
+      }
+    }
 
     const parsed = JSON.parse(raw)
     if (!parsed || typeof parsed !== 'object') return DEFAULT_PROFILE
@@ -26,14 +35,23 @@ export function getStoredProfile() {
   }
 }
 
-export function saveStoredProfile(profile) {
+export function saveStoredProfile(profile, email = null) {
+  const userEmail =
+    email || profile.email || localStorage.getItem('activeUserEmail')
+  const key = userEmail
+    ? `${PROFILE_STORAGE_KEY}-${userEmail}`
+    : PROFILE_STORAGE_KEY
+
   const normalizedProfile = {
     ...DEFAULT_PROFILE,
     ...profile,
   }
 
   try {
-    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(normalizedProfile))
+    localStorage.setItem(key, JSON.stringify(normalizedProfile))
+    if (userEmail) {
+      localStorage.setItem('activeUserEmail', userEmail)
+    }
   } catch {
     // Ignore localStorage write failures.
   }
@@ -43,7 +61,7 @@ export function saveStoredProfile(profile) {
 
 export function clearStoredProfile() {
   try {
-    localStorage.removeItem(PROFILE_STORAGE_KEY)
+    localStorage.removeItem('activeUserEmail')
   } catch {
     // Ignore localStorage write failures.
   }

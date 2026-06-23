@@ -7,11 +7,15 @@ function buildProfileFromName(fullName, email) {
   const parts = fullName.trim().split(/\s+/).filter(Boolean)
   const [firstName = 'Customer', ...lastNameParts] = parts
 
-  return saveStoredProfile({
-    firstName,
-    lastName: lastNameParts.join(' '),
+  localStorage.setItem('activeUserEmail', email)
+  return saveStoredProfile(
+    {
+      firstName,
+      lastName: lastNameParts.join(' '),
+      email,
+    },
     email,
-  })
+  )
 }
 
 export default function RegisterPage({ onRegisterSuccess, onNavigate }) {

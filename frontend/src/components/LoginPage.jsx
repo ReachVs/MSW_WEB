@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import AuthFooter from './AuthFooter'
 import AuthHeader from './AuthHeader'
-import { saveStoredProfile } from '../utils/profileStorage'
+import { getStoredProfile, saveStoredProfile } from '../utils/profileStorage'
 
 export default function LoginPage({ onLoginSuccess, onNavigate }) {
   const [email, setEmail] = useState('')
@@ -45,12 +45,25 @@ export default function LoginPage({ onLoginSuccess, onNavigate }) {
 
           if (profileResponse.ok) {
             const profileData = await profileResponse.json()
-            savedProfile = saveStoredProfile({
-              firstName: profileData.data?.name?.split(' ')?.[0] || 'Customer',
-              lastName:
-                profileData.data?.name?.split(' ')?.slice(1).join(' ') || '',
-              email: profileData.data?.email || email,
-            })
+            const userEmail = profileData.data?.email || email
+            localStorage.setItem('activeUserEmail', userEmail)
+
+            const existingProfile = getStoredProfile(userEmail)
+            const backendName = profileData.data?.name || ''
+            const nameParts = backendName.trim().split(/\s+/)
+            const backendFirst = nameParts[0] || ''
+            const backendLast = nameParts.slice(1).join(' ')
+
+            savedProfile = saveStoredProfile(
+              {
+                ...existingProfile,
+                firstName: backendFirst || existingProfile.firstName,
+                lastName:
+                  backendLast !== '' ? backendLast : existingProfile.lastName,
+                email: userEmail,
+              },
+              userEmail,
+            )
           }
         } catch (profileError) {
           console.error('Profile hydration error:', profileError)

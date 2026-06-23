@@ -33,6 +33,12 @@ class DatabaseSeeder extends Seeder
         );
         $admin->syncRoles([$adminRole]);
 
+        $customerUser = User::query()->firstOrCreate(
+            ['email' => 'Reach@example.com'],
+            ['name' => 'Reach User', 'password' => 'password'],
+        );
+        $customerUser->syncRoles([$customerRole]);
+
         // Mechanics
         $mechanics = [
             ['name' => 'Marcus Rivera', 'specialization' => 'ECU Performance Tuning', 'status' => 'busy'],

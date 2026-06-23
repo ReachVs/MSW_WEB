@@ -54,6 +54,20 @@ class AuthController extends Controller
         return new UserResource($request->user());
     }
 
+    public function updateProfile(Request $request): UserResource
+    {
+        $user = $request->user();
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $user->update([
+            'name' => $validated['name'],
+        ]);
+
+        return new UserResource($user);
+    }
+
     public function logout(Request $request): JsonResponse
     {
         // Revoke the current user's token

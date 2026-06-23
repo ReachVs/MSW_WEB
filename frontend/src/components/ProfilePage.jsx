@@ -41,7 +41,32 @@ export default function ProfilePage({ onLogout, profile, onProfileSave }) {
     }))
   }
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
+    const fullName =
+      `${tempUser.firstName || ''} ${tempUser.lastName || ''}`.trim()
+
+    const token = localStorage.getItem('authToken')
+    if (token) {
+      try {
+        const response = await fetch('http://localhost:8080/api/auth/me', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ name: fullName }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('Failed to update name on backend:', errorData)
+        }
+      } catch (err) {
+        console.error('Network error updating name on backend:', err)
+      }
+    }
+
     const savedProfile = saveStoredProfile(tempUser)
     setTempUser(savedProfile)
     onProfileSave?.(savedProfile)

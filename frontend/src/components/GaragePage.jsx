@@ -451,6 +451,7 @@ export default function GaragePage({ onUnauthorized }) {
         body: JSON.stringify({
           customer_name: getProfileDisplayName(profile),
           customer_email: profile.email,
+          customer_phone: profile.phone,
           bike_name: pendingBookingRequest.bikeInfo.name,
           model: pendingBookingRequest.bikeInfo.model,
           plate_number: pendingBookingRequest.bikeInfo.plateNumber,
@@ -985,15 +986,9 @@ export default function GaragePage({ onUnauthorized }) {
 
         {!loading && bikes.length === 0 && (
           <div className="py-xl text-center">
-            <p className="mb-lg text-sm font-body-md text-on-surface-variant">
+            <p className="text-sm font-body-md text-on-surface-variant">
               No motorcycles currently in service.
             </p>
-            <button
-              onClick={() => setServiceRequestStep('bike_info')}
-              className="bg-primary px-lg py-md font-label-sm text-xs uppercase tracking-widest text-on-primary transition-all hover:bg-secondary active:scale-95"
-            >
-              + Add New Service
-            </button>
           </div>
         )}
       </div>

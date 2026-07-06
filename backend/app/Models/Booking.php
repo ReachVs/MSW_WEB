@@ -68,6 +68,7 @@ class Booking extends Model
         'engine_capacity',
         'customer_name',
         'customer_email',
+        'customer_phone',
         'starts_at',
         'ends_at',
         'status',
@@ -209,7 +210,11 @@ class Booking extends Model
             ],
         ];
 
-        return $details[$key] ?? null;
+        return $details[$key] ?? [
+            'label' => ucfirst(str_replace('_', ' ', $key)),
+            'icon' => 'category',
+            'image' => null,
+        ];
     }
 
     public function canBeCancelledByCustomer(): bool

@@ -32,6 +32,7 @@ class StoreBookingRequest extends FormRequest
             'engine_capacity' => ['nullable', 'string', 'max:255'],
             'customer_name' => ['nullable', 'string', 'max:255'],
             'customer_email' => ['nullable', 'email', 'max:255'],
+            'customer_phone' => ['nullable', 'string', 'max:255'],
             'starts_at' => ['required', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'status' => ['nullable', 'string', 'in:'.implode(',', Booking::statuses())],

@@ -78,10 +78,12 @@
                                     $catDetails = $booking->getCategoryDetails();
                                     $colorClass = $categoryColors[$booking->getCategoryKey()] ?? 'border-outline-variant bg-surface-container-high text-primary';
                                 @endphp
+                                @if($catDetails)
                                 <span class="rounded border px-sm py-0.5 text-[10px] font-label-sm uppercase tracking-widest inline-flex items-center gap-xs {{ $colorClass }}">
                                     <span class="material-symbols-outlined text-[12px]">{{ $catDetails['icon'] }}</span>
                                     {{ $catDetails['label'] }}
                                 </span>
+                                @endif
                             @endif
                             <span class="ml-auto font-label-sm text-[10px] uppercase tracking-widest px-2 py-0.5 border rounded {{ $statusTagClasses[$booking->status] ?? 'bg-surface-container-high text-primary border-outline-variant' }}">
                                 {{ $statusLabels[$booking->status] ?? ucfirst(str_replace('_', ' ', $booking->status)) }}
@@ -97,7 +99,12 @@
                                 </h3>
                                 <p class="font-label-sm text-label-sm text-outline uppercase">Mechanic: {{ $booking->mechanic->name ?? 'N/A' }}</p>
                                 <p class="mt-xs font-label-sm text-[10px] uppercase tracking-widest text-outline">
-                                    {{ $booking->customer_name ?? 'Walk-In Customer' }} • {{ $booking->starts_at->format('d M Y • h:i A') }}
+                                    {{ $booking->customer_name ?? 'Walk-In Customer' }}
+                                    @if($booking->customer_phone) • {{ $booking->customer_phone }} @endif
+                                    • {{ $booking->customer_email }}
+                                </p>
+                                <p class="font-label-sm text-[10px] uppercase tracking-widest text-outline">
+                                    {{ $booking->starts_at->format('d M Y • h:i A') }}
                                 </p>
                             </div>
                             <span class="material-symbols-outlined text-outline">
@@ -176,7 +183,7 @@
         <span class="font-label-sm text-label-sm text-outline uppercase tracking-widest">{{ now()->format('M d, Y') }}</span>
     </div>
     <div class="overflow-x-auto no-scrollbar">
-        <div class="flex gap-gutter min-w-[1200px]">
+        <div class="flex gap-gutter">
             @forelse($todayBookings as $appt)
             <div class="w-80 bg-surface-container-low border border-outline-variant p-md flex flex-col gap-sm hover:border-primary transition-colors duration-200">
                 <div class="flex flex-wrap items-center justify-between gap-xs border-b border-outline-variant pb-xs mb-xs">
@@ -187,10 +194,12 @@
                                 $catDetails = $appt->getCategoryDetails();
                                 $colorClass = $categoryColors[$appt->getCategoryKey()] ?? 'border-outline-variant bg-surface-container-high text-primary';
                             @endphp
+                            @if($catDetails)
                             <span class="rounded border px-sm py-0.5 text-[9px] font-label-sm uppercase tracking-widest inline-flex items-center gap-xs {{ $colorClass }}">
                                 <span class="material-symbols-outlined text-[10px]">{{ $catDetails['icon'] }}</span>
                                 {{ $catDetails['label'] }}
                             </span>
+                            @endif
                         @endif
                         <span class="rounded border border-outline-variant bg-white px-sm py-0.5 text-[9px] font-label-sm uppercase tracking-widest text-primary">
                             {{ $appt->user_id ? 'Booking' : 'Walk In' }}
@@ -199,6 +208,9 @@
                 </div>
                 <div>
                     <h4 class="font-headline-sm text-lg font-bold uppercase text-primary">{{ $appt->customer_name }}</h4>
+                    <p class="font-mono text-[9px] uppercase tracking-widest text-outline">
+                        @if($appt->customer_phone) {{ $appt->customer_phone }} • @endif <span class="lowercase">{{ $appt->customer_email }}</span>
+                    </p>
                     <p class="font-body-md text-sm text-on-surface-variant mt-xs">{{ $appt->service_name }}</p>
                 </div>
                 <div class="mt-auto pt-sm border-t border-outline-variant flex items-center justify-between">

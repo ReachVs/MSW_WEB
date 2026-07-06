@@ -16,6 +16,7 @@
   select,
   textarea {
     transition: colors 200ms ease-out;
+    text-transform: none; /* Prevent browser/autofill from forcing uppercase on email inputs */
   }
 }
 

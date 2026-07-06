@@ -30,6 +30,7 @@ class BookingResource extends JsonResource
             'engine_capacity' => $this->engine_capacity,
             'customer_name' => $this->customer_name,
             'customer_email' => $this->customer_email,
+            'customer_phone' => $this->customer_phone,
             'starts_at' => $this->starts_at?->toISOString(),
             'ends_at' => $this->ends_at?->toISOString(),
             'booking_date' => $this->starts_at?->toDateString(),

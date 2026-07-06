@@ -173,7 +173,10 @@
                                 <div class="rounded border border-outline-variant bg-surface-container-low p-sm xl:col-span-1">
                                     <p class="text-[10px] font-label-sm uppercase tracking-widest text-outline">Customer</p>
                                     <p class="mt-xs text-sm font-bold text-primary">{{ $booking->customer_name }}</p>
-                                    <p class="mt-xs text-xs text-on-surface-variant">Online booking profile</p>
+                                    <p class="mt-xs text-[11px] text-on-surface-variant break-all">{{ $booking->customer_email }}</p>
+                                    @if($booking->customer_phone)
+                                        <p class="text-[11px] font-bold text-secondary mt-xs">{{ $booking->customer_phone }}</p>
+                                    @endif
                                 </div>
                                 <div class="rounded border border-outline-variant bg-surface-container-low p-sm xl:col-span-1">
                                     <p class="text-[10px] font-label-sm uppercase tracking-widest text-outline">Motorcycle</p>

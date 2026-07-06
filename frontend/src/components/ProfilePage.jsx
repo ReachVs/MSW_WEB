@@ -55,7 +55,7 @@ export default function ProfilePage({ onLogout, profile, onProfileSave }) {
             Accept: 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ name: fullName }),
+          body: JSON.stringify({ name: fullName, phone: tempUser.phone }),
         })
 
         if (!response.ok) {

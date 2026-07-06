@@ -59,10 +59,12 @@ class AuthController extends Controller
         $user = $request->user();
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:255'],
         ]);
 
         $user->update([
             'name' => $validated['name'],
+            'phone' => $validated['phone'] ?? null,
         ]);
 
         return new UserResource($user);

@@ -45,6 +45,7 @@ class BookingController extends Controller
         $data['status'] = Booking::STATUS_PENDING;
         $data['customer_name'] = $data['customer_name'] ?? $request->user()->name;
         $data['customer_email'] = $data['customer_email'] ?? $request->user()->email;
+        $data['customer_phone'] = $data['customer_phone'] ?? $request->user()->phone;
         $data['starts_at'] = $data['starts_at'] ?? now();
         $data['starts_at'] = Carbon::parse($data['starts_at'])->seconds(0);
         $data['ends_at'] = $data['ends_at'] ?? Carbon::parse($data['starts_at'])->copy()->addHour();

@@ -20,6 +20,7 @@ class AdminStoreBookingRequest extends FormRequest
         return [
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_email' => ['nullable', 'email', 'max:255'],
+            'customer_phone' => ['nullable', 'string', 'max:255'],
             'bike_name' => ['required', 'string', 'max:255'],
             'model' => ['required', 'string', 'max:255'],
             'plate_number' => ['required', 'string', 'max:255'],

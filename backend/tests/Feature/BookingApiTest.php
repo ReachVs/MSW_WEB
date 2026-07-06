@@ -542,6 +542,95 @@ class BookingApiTest extends TestCase
             ->assertJsonFragment(['id' => $bookingId, 'status' => Booking::STATUS_COMPLETED]);
     }
 
+    public function test_customer_profile_saves_phone(): void
+    {
+        $user = User::factory()->create(['phone' => null]);
+        Sanctum::actingAs($user);
+
+        $response = $this->putJson('/api/auth/me', [
+            'name' => 'Updated Name',
+            'phone' => '123-456-7890',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.phone', '123-456-7890');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'name' => 'Updated Name',
+            'phone' => '123-456-7890',
+        ]);
+    }
+
+    public function test_booking_creation_maps_phone_from_profile_if_missing(): void
+    {
+        Event::fake([BookingCreated::class]);
+
+        $user = User::factory()->create(['phone' => '999-999-9999']);
+        Sanctum::actingAs($user);
+        $service = $this->createService();
+
+        $startsAt = now()->addDay()->startOfDay()->setTime(8, 0);
+
+        $response = $this->postJson('/api/bookings', [
+            'bike_name' => 'Honda',
+            'model' => 'CBR',
+            'plate_number' => '11-222',
+            'service_id' => $service->id,
+            'service_name' => $service->name,
+            'selected_services' => [
+                ['id' => $service->id],
+            ],
+            'customer_name' => 'Reach User',
+            'customer_email' => 'reach@example.com',
+            'starts_at' => $startsAt->toISOString(),
+            'notes' => 'None',
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.customer_phone', '999-999-9999');
+
+        $this->assertDatabaseHas('bookings', [
+            'user_id' => $user->id,
+            'customer_phone' => '999-999-9999',
+        ]);
+    }
+
+    public function test_booking_creation_retains_provided_customer_phone(): void
+    {
+        Event::fake([BookingCreated::class]);
+
+        $user = User::factory()->create(['phone' => '999-999-9999']);
+        Sanctum::actingAs($user);
+        $service = $this->createService();
+
+        $startsAt = now()->addDay()->startOfDay()->setTime(8, 0);
+
+        $response = $this->postJson('/api/bookings', [
+            'bike_name' => 'Honda',
+            'model' => 'CBR',
+            'plate_number' => '11-222',
+            'service_id' => $service->id,
+            'service_name' => $service->name,
+            'selected_services' => [
+                ['id' => $service->id],
+            ],
+            'customer_name' => 'Reach User',
+            'customer_email' => 'reach@example.com',
+            'customer_phone' => '111-111-1111',
+            'starts_at' => $startsAt->toISOString(),
+            'notes' => 'None',
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.customer_phone', '111-111-1111');
+
+        $this->assertDatabaseHas('bookings', [
+            'user_id' => $user->id,
+            'customer_phone' => '111-111-1111',
+        ]);
+    }
+
     /**
      * @param  array<string, mixed>  $attributes
      */

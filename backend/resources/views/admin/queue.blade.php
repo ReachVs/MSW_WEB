@@ -21,13 +21,13 @@
         \App\Models\Booking::STATUS_CANCELLED => 'Cancelled',
     ];
     $statusTagClasses = [
-        \App\Models\Booking::STATUS_PENDING => 'bg-[#6B7280] text-white border-[#6B7280]',
-        \App\Models\Booking::STATUS_CONFIRMED => 'bg-[#2563EB] text-white border-[#2563EB]',
-        \App\Models\Booking::STATUS_REPAIR => 'bg-[#F59E0B] text-white border-[#F59E0B]',
-        \App\Models\Booking::STATUS_WAITING_PART => 'bg-[#8B5CF6] text-white border-[#8B5CF6]',
-        \App\Models\Booking::STATUS_READY_PICKUP => 'bg-[#10B981] text-white border-[#10B981]',
-        \App\Models\Booking::STATUS_COMPLETED => 'bg-[#059669] text-white border-[#059669]',
-        \App\Models\Booking::STATUS_CANCELLED => 'bg-[#EF4444] text-white border-[#EF4444]',
+        \App\Models\Booking::STATUS_PENDING      => 'border-l-2 border-l-[#6B7280] border border-[#6B7280]/20 bg-[#6B7280]/10 text-[#4B5563]',
+        \App\Models\Booking::STATUS_CONFIRMED    => 'border-l-2 border-l-[#1D4ED8] border border-[#1D4ED8]/20 bg-[#1D4ED8]/10 text-[#1D4ED8]',
+        \App\Models\Booking::STATUS_REPAIR       => 'border-l-2 border-l-[#B45309] border border-[#B45309]/20 bg-[#B45309]/10 text-[#B45309]',
+        \App\Models\Booking::STATUS_WAITING_PART => 'border-l-2 border-l-[#6D28D9] border border-[#6D28D9]/20 bg-[#6D28D9]/10 text-[#6D28D9]',
+        \App\Models\Booking::STATUS_READY_PICKUP => 'border-l-2 border-l-[#059669] border border-[#059669]/20 bg-[#059669]/10 text-[#059669]',
+        \App\Models\Booking::STATUS_COMPLETED    => 'border-l-2 border-l-[#047857] border border-[#047857]/20 bg-[#047857]/10 text-[#047857]',
+        \App\Models\Booking::STATUS_CANCELLED    => 'border-l-2 border-l-[#B91C1C] border border-[#B91C1C]/20 bg-[#B91C1C]/10 text-[#B91C1C]',
     ];
     $categoryColors = [
         'washing' => 'border-green-600/30 bg-green-600/10 text-green-600',
@@ -118,6 +118,7 @@
                                 </div>
                                 <div class="grid gap-xs pt-sm text-[11px] uppercase tracking-widest text-on-surface-variant md:grid-cols-2">
                                     <div>Customer: <span class="font-bold text-primary">{{ $activeJob->customer_name ?? 'N/A' }}</span></div>
+                                    <div>Contact: <span class="font-bold text-primary">{{ $activeJob->customer_phone ?? 'N/A' }} • <span class="lowercase text-lowercase font-medium">{{ $activeJob->customer_email }}</span></span></div>
                                     <div>Plate: <span class="font-bold text-primary">{{ $activeJob->plate_number ?? 'N/A' }}</span></div>
                                     <div>Engine: <span class="font-bold text-primary">{{ $activeJob->engine_capacity ?? 'N/A' }}</span></div>
                                     <div>Booking Date: <span class="font-bold text-primary">{{ $activeJob->starts_at?->format('d M Y') ?? 'N/A' }}</span></div>
@@ -194,6 +195,7 @@
                                 <p class="font-label-sm text-label-sm text-outline uppercase">{{ $item->mechanic->name ?? 'N/A' }} • {{ $item->service_name }}</p>
                                 <div class="mt-sm grid gap-xs text-[11px] uppercase tracking-widest text-on-surface-variant md:grid-cols-2">
                                     <div>Customer: <span class="font-bold text-primary">{{ $item->customer_name ?? 'N/A' }}</span></div>
+                                    <div>Contact: <span class="font-bold text-primary">{{ $item->customer_phone ?? 'N/A' }} • <span class="lowercase text-lowercase font-medium">{{ $item->customer_email }}</span></span></div>
                                     <div>Plate: <span class="font-bold text-primary">{{ $item->plate_number ?? 'N/A' }}</span></div>
                                     <div>Engine: <span class="font-bold text-primary">{{ $item->engine_capacity ?? 'N/A' }}</span></div>
                                     <div>Booking Date: <span class="font-bold text-primary">{{ $item->starts_at?->format('d M Y') ?? 'N/A' }}</span></div>
@@ -269,6 +271,7 @@
                                 <p class="font-label-sm text-label-sm text-outline uppercase">{{ $item->mechanic->name ?? 'N/A' }} • {{ $item->service_name }}</p>
                                 <div class="mt-sm grid gap-xs text-[11px] uppercase tracking-widest text-on-surface-variant md:grid-cols-2">
                                     <div>Customer: <span class="font-bold text-primary">{{ $item->customer_name ?? 'N/A' }}</span></div>
+                                    <div>Contact: <span class="font-bold text-primary">{{ $item->customer_phone ?? 'N/A' }} • <span class="lowercase text-lowercase font-medium">{{ $item->customer_email }}</span></span></div>
                                     <div>Plate: <span class="font-bold text-primary">{{ $item->plate_number ?? 'N/A' }}</span></div>
                                     <div>Engine: <span class="font-bold text-primary">{{ $item->engine_capacity ?? 'N/A' }}</span></div>
                                     <div>Booking Date: <span class="font-bold text-primary">{{ $item->starts_at?->format('d M Y') ?? 'N/A' }}</span></div>
@@ -344,6 +347,7 @@
                                 <p class="font-label-sm text-label-sm text-outline uppercase">{{ $item->mechanic->name ?? 'N/A' }} • {{ $item->service_name }}</p>
                                 <div class="mt-sm grid gap-xs text-[11px] uppercase tracking-widest text-on-surface-variant md:grid-cols-2">
                                     <div>Customer: <span class="font-bold text-primary">{{ $item->customer_name ?? 'N/A' }}</span></div>
+                                    <div>Contact: <span class="font-bold text-primary">{{ $item->customer_phone ?? 'N/A' }} • <span class="lowercase text-lowercase font-medium">{{ $item->customer_email }}</span></span></div>
                                     <div>Plate: <span class="font-bold text-primary">{{ $item->plate_number ?? 'N/A' }}</span></div>
                                     <div>Engine: <span class="font-bold text-primary">{{ $item->engine_capacity ?? 'N/A' }}</span></div>
                                     <div>Booking Date: <span class="font-bold text-primary">{{ $item->starts_at?->format('d M Y') ?? 'N/A' }}</span></div>
@@ -419,6 +423,7 @@
                                 <p class="font-label-sm text-label-sm text-outline uppercase">{{ $item->mechanic->name ?? 'N/A' }} • {{ $item->service_name }}</p>
                                 <div class="mt-sm grid gap-xs text-[11px] uppercase tracking-widest text-on-surface-variant md:grid-cols-2">
                                     <div>Customer: <span class="font-bold text-primary">{{ $item->customer_name ?? 'N/A' }}</span></div>
+                                    <div>Contact: <span class="font-bold text-primary">{{ $item->customer_phone ?? 'N/A' }} • <span class="lowercase text-lowercase font-medium">{{ $item->customer_email }}</span></span></div>
                                     <div>Plate: <span class="font-bold text-primary">{{ $item->plate_number ?? 'N/A' }}</span></div>
                                     <div>Engine: <span class="font-bold text-primary">{{ $item->engine_capacity ?? 'N/A' }}</span></div>
                                     <div>Booking Date: <span class="font-bold text-primary">{{ $item->starts_at?->format('d M Y') ?? 'N/A' }}</span></div>
@@ -471,62 +476,89 @@
     {{-- SERVICE ARCHIVE --}}
     @if($archive->isNotEmpty())
         <div class="col-span-12 border border-outline-variant bg-white">
-            <div class="bg-surface-container-low px-md py-sm border-b border-outline-variant font-label-sm uppercase tracking-widest text-outline">
-                Service Archive
+            {{-- Archive header — same industrial bar style as queue sections --}}
+            <div class="flex items-center gap-sm bg-primary px-md py-sm border-b border-primary">
+                <span class="material-symbols-outlined text-[16px] text-secondary">inventory_2</span>
+                <h3 class="font-label-sm text-label-sm uppercase tracking-widest text-white">
+                    Service Archive
+                </h3>
+                <span class="ml-auto font-mono text-[10px] uppercase tracking-widest text-white/60">{{ $archive->count() }} Records</span>
             </div>
             <div class="overflow-x-auto bg-white">
                 <table class="w-full border-collapse bg-white text-left">
                     <thead>
-                        <tr class="border-b border-outline-variant bg-surface-container-lowest">
-                            <th class="px-md py-sm font-label-sm text-label-sm uppercase text-outline">Ref ID</th>
-                            <th class="px-md py-sm font-label-sm text-label-sm uppercase text-outline">Date</th>
-                            <th class="px-md py-sm font-label-sm text-label-sm uppercase text-outline">Unit</th>
-                            <th class="px-md py-sm font-label-sm text-label-sm uppercase text-outline">Description</th>
-                            <th class="px-md py-sm font-label-sm text-label-sm uppercase text-outline">Service Type</th>
-                            <th class="px-md py-sm font-label-sm text-label-sm uppercase text-outline">Mechanic</th>
-                            <th class="px-md py-sm font-label-sm text-label-sm uppercase text-outline">Status</th>
+                        <tr class="border-b-2 border-outline-variant bg-surface-container-lowest">
+                            <th class="px-md py-sm font-mono text-[10px] uppercase tracking-widest text-outline">Ref ID</th>
+                            <th class="px-md py-sm font-mono text-[10px] uppercase tracking-widest text-outline">Date</th>
+                            <th class="px-md py-sm font-mono text-[10px] uppercase tracking-widest text-outline">Unit</th>
+                            <th class="px-md py-sm font-mono text-[10px] uppercase tracking-widest text-outline">Description</th>
+                            <th class="px-md py-sm font-mono text-[10px] uppercase tracking-widest text-outline">Service Type</th>
+                            <th class="px-md py-sm font-mono text-[10px] uppercase tracking-widest text-outline">Mechanic</th>
+                            <th class="px-md py-sm font-mono text-[10px] uppercase tracking-widest text-outline">Status</th>
                             @if($canDeleteArchive)
-                                <th class="px-md py-sm font-label-sm text-label-sm uppercase text-outline"></th>
+                                <th class="px-md py-sm font-mono text-[10px] uppercase tracking-widest text-outline"></th>
                             @endif
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-outline-variant bg-white">
                         @foreach($archive as $record)
-                        <tr class="bg-white transition-colors hover:bg-surface-container-low">
-                            <td class="px-md py-md font-mono text-body-md text-primary">#MA-{{ str_pad($record->id, 3, '0', STR_PAD_LEFT) }}-{{ $record->created_at->format('y') }}</td>
-                            <td class="px-md py-md font-body-md text-on-surface-variant">{{ optional($record->ends_at ?? $record->updated_at)->format('d M Y') ?? 'N/A' }}</td>
+                        <tr class="group bg-white transition-colors hover:bg-surface-container-lowest">
+                            <td class="px-md py-md font-mono text-[11px] font-bold text-secondary tracking-widest">
+                                #MA-{{ str_pad($record->id, 3, '0', STR_PAD_LEFT) }}-{{ $record->created_at->format('y') }}
+                            </td>
+                            <td class="px-md py-md font-mono text-[11px] uppercase tracking-widest text-outline">
+                                {{ optional($record->ends_at ?? $record->updated_at)->format('d M Y') ?? 'N/A' }}
+                            </td>
                             <td class="px-md py-md">
-                                <div class="font-body-md font-medium text-primary">
+                                <div class="font-body-md font-bold uppercase text-primary text-[13px]">
                                     {{ trim(($record->bike_name ?? '') . ' ' . ($record->model ?? '')) ?: $record->service_name }}
                                 </div>
-                                <div class="mt-xs text-[11px] uppercase tracking-widest text-on-surface-variant">
+                                <div class="mt-xs font-mono text-[10px] uppercase tracking-widest text-outline">
                                     Plate: <span class="font-bold text-primary">{{ $record->plate_number ?? 'N/A' }}</span>
                                 </div>
-                                <div class="text-[11px] uppercase tracking-widest text-on-surface-variant">
+                                <div class="font-mono text-[10px] uppercase tracking-widest text-outline">
                                     Engine: <span class="font-bold text-primary">{{ $record->engine_capacity ?? 'N/A' }}</span>
                                 </div>
+                                <div class="mt-xs font-mono text-[9px] uppercase tracking-widest text-outline">
+                                    Customer: <span class="font-bold text-secondary">{{ $record->customer_name }}</span>
+                                    @if($record->customer_phone) • Phone: <span class="font-bold text-primary">{{ $record->customer_phone }}</span> @endif
+                                    • Email: <span class="font-bold text-primary text-lowercase">{{ $record->customer_email }}</span>
+                                </div>
                             </td>
-                            <td class="px-md py-md font-body-md text-on-surface-variant">
-                                {{ $record->notes ?: 'No customer description provided.' }}
+                            <td class="px-md py-md font-body-md text-[12px] text-on-surface-variant max-w-[14rem]">
+                                {{ $record->notes ?: '—' }}
                             </td>
                             <td class="px-md py-md">
-                                <div class="font-body-md font-medium text-primary">{{ $record->service_name }}</div>
+                                <div class="font-body-md font-medium text-primary text-[12px]">{{ $record->service_name }}</div>
                                 @if($record->getCategoryKey())
                                     @php
                                         $catDetails = $record->getCategoryDetails();
                                         $colorClass = $categoryColors[$record->getCategoryKey()] ?? 'border-outline-variant bg-surface-container-high text-primary';
                                     @endphp
                                     <div class="mt-xs">
-                                        <span class="rounded border px-sm py-xs text-[10px] font-label-sm uppercase tracking-widest inline-flex items-center gap-xs {{ $colorClass }}">
-                                            <span class="material-symbols-outlined text-[14px]">{{ $catDetails['icon'] }}</span>
+                                        <span class="border px-sm py-xs text-[10px] font-mono uppercase tracking-widest inline-flex items-center gap-xs {{ $colorClass }}">
+                                            <span class="material-symbols-outlined text-[13px]">{{ $catDetails['icon'] }}</span>
                                             {{ $catDetails['label'] }}
                                         </span>
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-md py-md font-body-md text-on-surface-variant">{{ $record->mechanic->name ?? 'N/A' }}</td>
+                            <td class="px-md py-md font-mono text-[11px] uppercase tracking-widest text-on-surface-variant">{{ $record->mechanic->name ?? '—' }}</td>
                             <td class="px-md py-md">
-                                <span class="text-label-sm uppercase px-sm py-1 font-bold rounded-full border {{ $statusTagClasses[$record->status] ?? 'bg-surface-container-high text-primary border-outline-variant' }}">
+                                {{-- Angular status badge matching project style --}}
+                                <span class="inline-flex items-center gap-xs px-sm py-1 font-mono text-[10px] font-bold uppercase tracking-widest {{ $statusTagClasses[$record->status] ?? 'border border-outline-variant bg-surface-container-high text-primary' }}">
+                                    @php
+                                        $statusIcons = [
+                                            'pending'       => 'schedule',
+                                            'confirmed'     => 'check_circle',
+                                            'repair'        => 'build',
+                                            'waiting_part'  => 'hourglass_empty',
+                                            'ready_pickup'  => 'done_all',
+                                            'completed'     => 'verified',
+                                            'cancelled'     => 'cancel',
+                                        ];
+                                    @endphp
+                                    <span class="material-symbols-outlined text-[12px]">{{ $statusIcons[$record->status] ?? 'info' }}</span>
                                     {{ $statusLabels[$record->status] ?? ucfirst(str_replace('_', ' ', $record->status)) }}
                                 </span>
                             </td>
@@ -535,7 +567,7 @@
                                     <form method="POST" action="{{ route($deleteRouteName, $record) }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="px-md py-1 border border-error text-error font-label-sm text-label-sm uppercase hover:bg-error hover:text-white transition-colors">Delete</button>
+                                        <button class="px-md py-1 border border-error text-error font-mono text-[10px] uppercase tracking-widest hover:bg-error hover:text-white transition-colors">Delete</button>
                                     </form>
                                 </td>
                             @endif

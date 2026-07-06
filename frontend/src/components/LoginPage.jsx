@@ -115,8 +115,9 @@ export default function LoginPage({ onLoginSuccess, onNavigate }) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="OPERATOR@MADAPE.ENGINEERING"
-                className="input-underline bg-transparent py-sm font-body-md text-base text-on-surface placeholder:text-outline-variant focus:outline-none w-full"
+                placeholder="operator@madape.engineering"
+                autoComplete="email"
+                className="input-underline bg-transparent py-sm font-body-md text-base text-on-surface placeholder:text-outline-variant focus:outline-none w-full normal-case"
                 disabled={isLoading}
               />
             </div>

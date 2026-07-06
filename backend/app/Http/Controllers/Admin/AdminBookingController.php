@@ -119,6 +119,7 @@ class AdminBookingController extends Controller
             'engine_capacity' => $validated['engine_capacity'] ?? null,
             'customer_name' => $validated['customer_name'],
             'customer_email' => $validated['customer_email'] ?: ('walkin-'.now()->timestamp.'@walkin.local'),
+            'customer_phone' => $validated['customer_phone'] ?? null,
             'mechanic_id' => $validated['mechanic_id'] ?? null,
             'starts_at' => $startsAt,
             'ends_at' => $startsAt->copy()->addHour(),

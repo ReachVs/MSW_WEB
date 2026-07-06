@@ -167,6 +167,7 @@ export default function CatalogPage({ onBook }) {
         body: JSON.stringify({
           customer_name: getProfileDisplayName(profile),
           customer_email: profile.email,
+          customer_phone: profile.phone,
           bike_name: bikeInfo.name,
           model: bikeInfo.model,
           plate_number: bikeInfo.plateNumber,
